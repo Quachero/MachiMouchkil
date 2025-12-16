@@ -28,6 +28,7 @@ app.use('/api/contests', require('./routes/contests'));
 app.use('/api/referrals', require('./routes/referrals'));
 app.use('/api/game', require('./routes/game'));
 app.use('/api/feed', require('./routes/feed'));
+app.use('/api/debug-db', require('./routes/debug'));
 
 // Health check
 app.get('/api/health', (req, res) => {
