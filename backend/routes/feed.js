@@ -1,10 +1,10 @@
 // Feed Routes
 const express = require('express');
 const router = express.Router();
-const db = require('../database');
+const db = require('../db-adapter');
 
 // GET /api/feed - Get all feed items
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const type = req.query.type;
         const limit = Math.min(parseInt(req.query.limit) || 20, 50);
@@ -20,7 +20,8 @@ router.get('/', (req, res) => {
         query += ' ORDER BY created_at DESC LIMIT ?';
         params.push(limit);
 
-        const items = db.prepare(query).all(...params);
+        // Note: db.query takes array, not rest args
+        const items = await db.query(query, params);
 
         res.json({ items });
     } catch (err) {
@@ -30,9 +31,9 @@ router.get('/', (req, res) => {
 });
 
 // GET /api/feed/:id - Get single feed item
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
-        const item = db.prepare('SELECT * FROM feed_items WHERE id = ?').get(req.params.id);
+        const item = await db.get('SELECT * FROM feed_items WHERE id = ?', [req.params.id]);
 
         if (!item) {
             return res.status(404).json({ error: 'Item not found' });

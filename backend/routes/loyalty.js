@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuid } = require('uuid');
-const db = require('../database');
+const db = require('../db-adapter');
 const { authenticateToken } = require('../middleware/auth');
 
 // Reward milestones
@@ -15,13 +15,12 @@ const MILESTONES = [
 ];
 
 // POST /api/loyalty/visit - Record a visit
-router.post('/visit', authenticateToken, (req, res) => {
+router.post('/visit', authenticateToken, async (req, res) => {
     try {
         // Increment visits and add points
-        db.prepare('UPDATE users SET visits = visits + 1, points = points + 100 WHERE id = ?')
-            .run(req.user.id);
+        await db.run('UPDATE users SET visits = visits + 1, points = points + 100 WHERE id = ?', [req.user.id]);
 
-        const user = db.prepare('SELECT visits, points FROM users WHERE id = ?').get(req.user.id);
+        const user = await db.get('SELECT visits, points FROM users WHERE id = ?', [req.user.id]);
 
         // Check for milestone rewards
         const milestone = MILESTONES.find(m => m.visits === user.visits);
@@ -29,10 +28,14 @@ router.post('/visit', authenticateToken, (req, res) => {
 
         if (milestone) {
             const rewardId = uuid();
-            db.prepare(`
+            // Postgres/SQLite compatible date logic
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + 30);
+
+            await db.run(`
                 INSERT INTO rewards (id, user_id, type, name, expires_at)
-                VALUES (?, ?, ?, ?, datetime('now', '+30 days'))
-            `).run(rewardId, req.user.id, milestone.type, milestone.name);
+                VALUES (?, ?, ?, ?, ?)
+            `, [rewardId, req.user.id, milestone.type, milestone.name, expiresAt.toISOString()]);
 
             newReward = { id: rewardId, ...milestone };
         }
@@ -50,16 +53,16 @@ router.post('/visit', authenticateToken, (req, res) => {
 });
 
 // GET /api/loyalty/rewards - Get user's rewards
-router.get('/rewards', authenticateToken, (req, res) => {
+router.get('/rewards', authenticateToken, async (req, res) => {
     try {
-        const rewards = db.prepare(`
+        const rewards = await db.query(`
             SELECT id, type, name, used, used_at, expires_at, created_at
             FROM rewards
             WHERE user_id = ?
             ORDER BY created_at DESC
-        `).all(req.user.id);
+        `, [req.user.id]);
 
-        const user = db.prepare('SELECT visits, points FROM users WHERE id = ?').get(req.user.id);
+        const user = await db.get('SELECT visits, points FROM users WHERE id = ?', [req.user.id]);
 
         // Calculate next reward
         const nextMilestone = MILESTONES.find(m => m.visits > user.visits);
@@ -79,18 +82,18 @@ router.get('/rewards', authenticateToken, (req, res) => {
 });
 
 // POST /api/loyalty/use-reward/:id - Use a reward
-router.post('/use-reward/:id', authenticateToken, (req, res) => {
+router.post('/use-reward/:id', authenticateToken, async (req, res) => {
     try {
-        const reward = db.prepare(`
+        const reward = await db.get(`
             SELECT * FROM rewards WHERE id = ? AND user_id = ? AND used = 0
-        `).get(req.params.id, req.user.id);
+        `, [req.params.id, req.user.id]);
 
         if (!reward) {
             return res.status(404).json({ error: 'Reward not found or already used' });
         }
 
-        db.prepare('UPDATE rewards SET used = 1, used_at = CURRENT_TIMESTAMP WHERE id = ?')
-            .run(req.params.id);
+        const now = new Date().toISOString();
+        await db.run('UPDATE rewards SET used = 1, used_at = ? WHERE id = ?', [now, req.params.id]);
 
         res.json({
             message: 'Reward used! Enjoy! 🍹',
@@ -103,15 +106,19 @@ router.post('/use-reward/:id', authenticateToken, (req, res) => {
 });
 
 // GET /api/loyalty/stats - Get loyalty stats
-router.get('/stats', authenticateToken, (req, res) => {
+router.get('/stats', authenticateToken, async (req, res) => {
     try {
-        const user = db.prepare('SELECT visits, points FROM users WHERE id = ?').get(req.user.id);
-        const rewardCount = db.prepare('SELECT COUNT(*) as count FROM rewards WHERE user_id = ? AND used = 0').get(req.user.id);
+        const user = await db.get('SELECT visits, points FROM users WHERE id = ?', [req.user.id]);
+
+        // Count implementation differs slightly in return structure for get/db-adapter
+        // db.get returns row object. { count: 5 }
+        const rewardCountRow = await db.get('SELECT COUNT(*) as count FROM rewards WHERE user_id = ? AND used = 0', [req.user.id]);
+        const rewardCount = rewardCountRow ? rewardCountRow.count : 0;
 
         res.json({
             visits: user.visits,
             points: user.points,
-            availableRewards: rewardCount.count,
+            availableRewards: rewardCount,
             milestones: MILESTONES.map(m => ({
                 ...m,
                 achieved: user.visits >= m.visits

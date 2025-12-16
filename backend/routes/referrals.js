@@ -1,13 +1,13 @@
 // Referrals Routes
 const express = require('express');
 const router = express.Router();
-const db = require('../database');
+const db = require('../db-adapter');
 const { authenticateToken } = require('../middleware/auth');
 
 // GET /api/referrals/code - Get user's referral code
-router.get('/code', authenticateToken, (req, res) => {
+router.get('/code', authenticateToken, async (req, res) => {
     try {
-        const user = db.prepare('SELECT referral_code FROM users WHERE id = ?').get(req.user.id);
+        const user = await db.get('SELECT referral_code FROM users WHERE id = ?', [req.user.id]);
 
         res.json({ code: user.referral_code });
     } catch (err) {
@@ -17,19 +17,21 @@ router.get('/code', authenticateToken, (req, res) => {
 });
 
 // GET /api/referrals/stats - Get referral stats
-router.get('/stats', authenticateToken, (req, res) => {
+router.get('/stats', authenticateToken, async (req, res) => {
     try {
-        const referrals = db.prepare(`
+        const referrals = await db.query(`
             SELECT id, name, created_at
             FROM users
             WHERE referred_by = ?
             ORDER BY created_at DESC
-        `).all(req.user.id);
+        `, [req.user.id]);
 
         const totalPoints = referrals.length * 200; // 200 points per referral
 
+        const user = await db.get('SELECT referral_code FROM users WHERE id = ?', [req.user.id]);
+
         res.json({
-            code: db.prepare('SELECT referral_code FROM users WHERE id = ?').get(req.user.id).referral_code,
+            code: user.referral_code,
             total: referrals.length,
             pointsEarned: totalPoints,
             referrals: referrals.map(r => ({
@@ -46,7 +48,7 @@ router.get('/stats', authenticateToken, (req, res) => {
 });
 
 // POST /api/referrals/validate - Validate a referral code (for checking)
-router.post('/validate', (req, res) => {
+router.post('/validate', async (req, res) => {
     try {
         const { code } = req.body;
 
@@ -54,7 +56,7 @@ router.post('/validate', (req, res) => {
             return res.status(400).json({ error: 'Code required' });
         }
 
-        const referrer = db.prepare('SELECT id, name FROM users WHERE referral_code = ?').get(code);
+        const referrer = await db.get('SELECT id, name FROM users WHERE referral_code = ?', [code]);
 
         if (!referrer) {
             return res.status(404).json({ error: 'Invalid referral code', valid: false });

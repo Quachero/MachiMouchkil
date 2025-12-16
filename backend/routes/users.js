@@ -1,18 +1,18 @@
 // Users Routes - Profile & Points
 const express = require('express');
 const router = express.Router();
-const db = require('../database');
+const db = require('../db-adapter');
 const { authenticateToken } = require('../middleware/auth');
 
 // GET /api/users/me - Get current user profile with calculated mascota stats
-router.get('/me', authenticateToken, (req, res) => {
+router.get('/me', authenticateToken, async (req, res) => {
     try {
-        let user = db.prepare(`
+        let user = await db.get(`
             SELECT id, name, email, phone, points, visits, mascot_level, mascot_xp, mascot_stage, 
                    mascot_hunger, mascot_energy, mascot_happiness, mascot_hygiene, mascot_last_update,
                    referral_code, created_at
             FROM users WHERE id = ?
-        `).get(req.user.id);
+        `, [req.user.id]);
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -37,15 +37,15 @@ router.get('/me', authenticateToken, (req, res) => {
             user.mascot_hygiene = Math.max(0, (user.mascot_hygiene || 50) - hygieneDecay);
 
             // Save updated stats
-            db.prepare(`
+            await db.run(`
                 UPDATE users 
                 SET mascot_hunger = ?, mascot_energy = ?, mascot_happiness = ?, mascot_hygiene = ?, mascot_last_update = ?
                 WHERE id = ?
-            `).run(
+            `, [
                 user.mascot_hunger, user.mascot_energy, user.mascot_happiness, user.mascot_hygiene,
                 now.toISOString(),
                 req.user.id
-            );
+            ]);
         }
         // --- DECAY LOGIC END ---
 
@@ -57,15 +57,13 @@ router.get('/me', authenticateToken, (req, res) => {
 });
 
 // PUT /api/users/profile - Update profile
-router.put('/profile', authenticateToken, (req, res) => {
+router.put('/profile', authenticateToken, async (req, res) => {
     try {
         const { name, phone } = req.body;
 
-        db.prepare('UPDATE users SET name = ?, phone = ? WHERE id = ?')
-            .run(name, phone, req.user.id);
+        await db.run('UPDATE users SET name = ?, phone = ? WHERE id = ?', [name, phone, req.user.id]);
 
-        const user = db.prepare('SELECT id, name, email, phone, points FROM users WHERE id = ?')
-            .get(req.user.id);
+        const user = await db.get('SELECT id, name, email, phone, points FROM users WHERE id = ?', [req.user.id]);
 
         res.json({ message: 'Profile updated', user });
     } catch (err) {
@@ -75,7 +73,7 @@ router.put('/profile', authenticateToken, (req, res) => {
 });
 
 // PUT /api/users/points - Add points
-router.put('/points', authenticateToken, (req, res) => {
+router.put('/points', authenticateToken, async (req, res) => {
     try {
         const { amount, reason } = req.body;
 
@@ -83,10 +81,9 @@ router.put('/points', authenticateToken, (req, res) => {
             return res.status(400).json({ error: 'Amount required' });
         }
 
-        db.prepare('UPDATE users SET points = points + ? WHERE id = ?')
-            .run(amount, req.user.id);
+        await db.run('UPDATE users SET points = points + ? WHERE id = ?', [amount, req.user.id]);
 
-        const user = db.prepare('SELECT points FROM users WHERE id = ?').get(req.user.id);
+        const user = await db.get('SELECT points FROM users WHERE id = ?', [req.user.id]);
 
         res.json({
             message: `+${amount} points added!`,
@@ -100,7 +97,7 @@ router.put('/points', authenticateToken, (req, res) => {
 });
 
 // PUT /api/users/mascot - Update mascot
-router.put('/mascot', authenticateToken, (req, res) => {
+router.put('/mascot', authenticateToken, async (req, res) => {
     try {
         const { xp, level, stage } = req.body;
 
@@ -113,11 +110,13 @@ router.put('/mascot', authenticateToken, (req, res) => {
 
         if (updates.length > 0) {
             values.push(req.user.id);
-            db.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+            // Construct query safely
+            // Note: DB Adapter conversion handles '?' but constructing strings needs care
+            // "mascot_xp = ?" -> adapter will see ? and convert
+            await db.run(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, values);
         }
 
-        const user = db.prepare('SELECT mascot_level, mascot_xp, mascot_stage FROM users WHERE id = ?')
-            .get(req.user.id);
+        const user = await db.get('SELECT mascot_level, mascot_xp, mascot_stage FROM users WHERE id = ?', [req.user.id]);
 
         res.json({ mascot: user });
     } catch (err) {
@@ -127,10 +126,10 @@ router.put('/mascot', authenticateToken, (req, res) => {
 });
 
 // POST /api/users/interact - Interact with mascot (Feed, Sleep, Play, Clean)
-router.post('/interact', authenticateToken, (req, res) => {
+router.post('/interact', authenticateToken, async (req, res) => {
     try {
         const { action } = req.body; // feed, sleep, play, clean
-        const user = db.prepare('SELECT mascot_hunger, mascot_energy, mascot_happiness, mascot_hygiene FROM users WHERE id = ?').get(req.user.id);
+        const user = await db.get('SELECT mascot_hunger, mascot_energy, mascot_happiness, mascot_hygiene FROM users WHERE id = ?', [req.user.id]);
 
         let updates = {};
         let message = '';
@@ -173,10 +172,10 @@ router.post('/interact', authenticateToken, (req, res) => {
         const values = Object.values(updates);
         values.push(now, req.user.id);
 
-        db.prepare(`UPDATE users SET ${setClause}, mascot_last_update = ? WHERE id = ?`).run(...values);
+        await db.run(`UPDATE users SET ${setClause}, mascot_last_update = ? WHERE id = ?`, values);
 
         // Fetch new state
-        const newState = db.prepare('SELECT mascot_hunger, mascot_energy, mascot_happiness, mascot_hygiene FROM users WHERE id = ?').get(req.user.id);
+        const newState = await db.get('SELECT mascot_hunger, mascot_energy, mascot_happiness, mascot_hygiene FROM users WHERE id = ?', [req.user.id]);
 
         res.json({ message, stats: newState });
 

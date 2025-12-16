@@ -1,7 +1,3 @@
-const { Pool } = require('pg');
-const Database = require('better-sqlite3');
-const path = require('path');
-
 class DBAdapter {
     constructor() {
         this.type = process.env.DATABASE_URL ? 'postgres' : 'sqlite';
@@ -9,15 +5,16 @@ class DBAdapter {
         this.sqlite = null;
 
         if (this.type === 'postgres') {
+            const { Pool } = require('pg');
             console.log('🔌 Connecting to PostgreSQL...');
             this.pool = new Pool({
                 connectionString: process.env.DATABASE_URL,
-                ssl: { rejectUnauthorized: false } // Required for Vercel/Neon/Supabase
+                ssl: { rejectUnauthorized: false }
             });
         } else {
             console.log('📂 Using Local SQLite');
-            const dbPath = path.join(__dirname, 'machi.db');
-            this.sqlite = new Database(dbPath);
+            // Lazy load better-sqlite3 only if needed (though it's standard here)
+            this.sqlite = new Database(path.join(__dirname, 'machi.db'));
             this.sqlite.pragma('foreign_keys = ON');
         }
     }
