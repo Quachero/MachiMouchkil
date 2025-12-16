@@ -12,7 +12,6 @@ class DBAdapter {
                 ssl: { rejectUnauthorized: false }
             });
         } else {
-        } else {
             console.log('📂 Using Local SQLite');
             const Database = require('better-sqlite3');
             const path = require('path');
