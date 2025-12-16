@@ -1,4 +1,6 @@
 /* Machi Mouchkil - Design System - Theme Surf & Ocean 🏄‍♂️ */
+@import 'mascot.css';
+
 :root {
     --primary: #00B4D8;
     --primary-dark: #0096C7;
