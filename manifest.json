@@ -1,0 +1,38 @@
+{
+    "name": "Machi Mochkil",
+    "short_name": "Machi",
+    "description": "Ton resto, ton mood - Ride the wave, taste the vibe 🏄‍♂️",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#023047",
+    "theme_color": "#00B4D8",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["food", "lifestyle", "entertainment"],
+    "lang": "fr-FR",
+    "shortcuts": [
+        {
+            "name": "Ma Fidélité",
+            "url": "/index.html#loyalty",
+            "description": "Voir ma carte de fidélité"
+        },
+        {
+            "name": "Mini-Jeu",
+            "url": "/index.html#game",
+            "description": "Jouer au jeu Turtle Surf"
+        }
+    ]
+}

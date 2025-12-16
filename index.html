@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Machi Mochkil - Ride the wave 🏄‍♂️</title>
+    <meta name="description" content="L'app qui récompense ta fidélité ! Jeux, cadeaux, et une mascotte trop mignonne.">
+
+    <!-- PWA Meta -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00B4D8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Machi Mochkil">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+
+<body>
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="screen active">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <div class="mascot-preview">
+                    <div class="mascot-egg">🐢</div>
+                    <div class="mascot-sparkles">🌊</div>
+                </div>
+                <h1 class="brand-title">Machi<span>Mochkil</span></h1>
+                <p class="brand-tagline">Ride the wave, taste the vibe 🏄‍♂️</p>
+            </div>
+
+            <div class="auth-form" id="login-form">
+                <h2>Content de te revoir ! 👋</h2>
+                <div class="input-group">
+                    <input type="email" id="login-email" placeholder="Email ou téléphone" required>
+                    <span class="input-icon">📧</span>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="login-password" placeholder="Mot de passe" required>
+                    <span class="input-icon">🔒</span>
+                </div>
+                <button class="btn-primary" onclick="handleLogin()">
+                    <span>Se connecter</span>
+                    <span class="btn-emoji">🚀</span>
+                </button>
+                <div class="auth-divider">
+                    <span>ou continue avec</span>
+                </div>
+                <div class="social-login">
+                    <button class="btn-social google" onclick="socialLogin('google')">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="#4285F4"
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="#34A853"
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="#FBBC05"
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                            <path fill="#EA4335"
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                        </svg>
+                        Google
+                    </button>
+                    <button class="btn-social apple" onclick="socialLogin('apple')">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="currentColor"
+                                d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+                        </svg>
+                        Apple
+                    </button>
+                </div>
+                <p class="auth-switch">
+                    Pas encore membre ? <a href="#" onclick="showRegister()">Inscris-toi</a>
+                </p>
+            </div>
+
+            <div class="auth-form hidden" id="register-form">
+                <h2>Bienvenue dans la famille ! 🎉</h2>
+                <div class="welcome-gift">
+                    <span class="gift-icon">🎁</span>
+                    <span>Boisson offerte à l'inscription !</span>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="register-name" placeholder="Ton prénom" required>
+                    <span class="input-icon">👤</span>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="register-email" placeholder="Email" required>
+                    <span class="input-icon">📧</span>
+                </div>
+                <div class="input-group">
+                    <input type="tel" id="register-phone" placeholder="Téléphone (optionnel)">
+                    <span class="input-icon">📱</span>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="register-password" placeholder="Mot de passe" required>
+                    <span class="input-icon">🔒</span>
+                </div>
+                <button class="btn-primary" onclick="handleRegister()">
+                    <span>Créer mon compte</span>
+                    <span class="btn-emoji">✨</span>
+                </button>
+                <div class="auth-divider">
+                    <span>ou continue avec</span>
+                </div>
+                <div class="social-login">
+                    <button class="btn-social google" onclick="socialLogin('google')">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="#4285F4"
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="#34A853"
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="#FBBC05"
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                            <path fill="#EA4335"
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                        </svg>
+                        Google
+                    </button>
+                    <button class="btn-social apple" onclick="socialLogin('apple')">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="currentColor"
+                                d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+                        </svg>
+                        Apple
+                    </button>
+                </div>
+                <p class="auth-switch">
+                    Déjà membre ? <a href="#" onclick="showLogin()">Connecte-toi</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onboarding Screen -->
+    <div id="onboarding-screen" class="screen">
+        <div class="onboarding-container">
+            <div class="onboarding-slides">
+                <div class="onboarding-slide active" data-slide="0">
+                    <div class="slide-illustration">
+                        <div class="mascot-celebrate">🏄‍♂️</div>
+                        <div class="confetti"></div>
+                    </div>
+                    <h2>Bienvenue chez Machi Mochkil ! 🌴</h2>
+                    <p>L'app qui transforme tes repas en aventure tropicale. Prêt à surfer ?</p>
+                </div>
+                <div class="onboarding-slide" data-slide="1">
+                    <div class="slide-illustration">
+                        <div class="loyalty-preview">
+                            <div class="stamp">🌊</div>
+                            <div class="stamp">🌊</div>
+                            <div class="stamp">🌊</div>
+                            <div class="stamp empty"></div>
+                            <div class="stamp empty"></div>
+                        </div>
+                    </div>
+                    <h2>Cumule tes vagues 🏆</h2>
+                    <p>Chaque passage compte ! Gagne des récompenses à chaque marée haute.</p>
+                </div>
+                <div class="onboarding-slide" data-slide="2">
+                    <div class="slide-illustration">
+                        <div class="mascot-stages">
+                            <span>🥚</span>
+                            <span class="arrow">→</span>
+                            <span>🐢</span>
+                            <span class="arrow">→</span>
+                            <span>🐬</span>
+                            <span class="arrow">→</span>
+                            <span>🦈</span>
+                        </div>
+                    </div>
+                    <h2>Ta tortue t'accompagne 🐢</h2>
+                    <p>Prends soin d'elle et regarde-la évoluer au fil de tes aventures marines !</p>
+                </div>
+                <div class="onboarding-slide" data-slide="3">
+                    <div class="slide-illustration">
+                        <div class="gift-animation">
+                            <span class="gift-box">🎁</span>
+                            <span class="gift-pop">🍹</span>
+                        </div>
+                    </div>
+                    <h2>Ton cadeau de bienvenue ! 🎁</h2>
+                    <p>Une boisson t'attend déjà ! Présente ce code au resto pour la récupérer.</p>
+                    <div class="welcome-code">
+                        <span id="welcome-code-value">WELCOME2024</span>
+                        <button class="copy-btn" onclick="copyCode()">📋</button>
+                    </div>
+                </div>
+            </div>
+            <div class="onboarding-dots">
+                <span class="dot active" data-dot="0"></span>
+                <span class="dot" data-dot="1"></span>
+                <span class="dot" data-dot="2"></span>
+                <span class="dot" data-dot="3"></span>
+            </div>
+            <div class="onboarding-actions">
+                <button class="btn-secondary" onclick="skipOnboarding()">Passer</button>
+                <button class="btn-primary" onclick="nextSlide()" id="onboarding-next">
+                    <span>Suivant</span>
+                    <span class="btn-emoji">→</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app-screen" class="screen">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="user-greeting">
+                    <span class="greeting-text">Salut,</span>
+                    <span class="user-name" id="user-name-display">Foodie</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="points-badge" onclick="showPointsDetail()">
+                    <span class="points-icon">⭐</span>
+                    <span class="points-value" id="total-points">0</span>
+                </div>
+                <button class="notification-btn" onclick="showNotifications()">
+                    <span>🔔</span>
+                    <span class="notification-dot"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Tab Content -->
+        <main class="app-content">
+            <!-- Home Tab -->
+            <section id="tab-home" class="tab-content active">
+                <div class="mascot-section">
+                    <div class="mascot-container" onclick="interactWithMascot()">
+                        <div class="mascot-character" id="mascot">
+                            <div class="mascot-body">🐢</div>
+                            <div class="mascot-expression" id="mascot-expression"></div>
+                            <div class="mascot-accessory" id="mascot-accessory"></div>
+                        </div>
+                        <div class="mascot-speech-bubble" id="mascot-speech">
+                            <p>Aloha ! Trop content de te voir ! 🌺</p>
+                        </div>
+                        <div class="mascot-hearts" id="mascot-hearts"></div>
+                    </div>
+                    <div class="mascot-info">
+                        <div class="mascot-level">
+                            <span class="level-label">Niveau</span>
+                            <span class="level-value" id="mascot-level">1</span>
+                            <span class="level-name" id="mascot-stage">Bébé</span>
+                        </div>
+                        <div class="mascot-xp">
+                            <div class="xp-bar">
+                                <div class="xp-fill" id="mascot-xp-fill" style="width: 30%"></div>
+                            </div>
+                            <span class="xp-text"><span id="mascot-xp">30</span>/100 XP</span>
+                        </div>
+                        <div class="mascot-mood">
+                            <span>Humeur :</span>
+                            <span id="mascot-mood">😊 Content</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <div class="action-card" onclick="switchTab('loyalty')">
+                        <span class="action-icon">💳</span>
+                        <span class="action-label">Ma Fidélité</span>
+                        <span class="action-badge" id="visits-count">3/10</span>
+                    </div>
+                    <div class="action-card" onclick="switchTab('contests')">
+                        <span class="action-icon">🎰</span>
+                        <span class="action-label">Jeux</span>
+                        <span class="action-badge new">NEW</span>
+                    </div>
+                    <div class="action-card" onclick="switchTab('referral')">
+                        <span class="action-icon">👥</span>
+                        <span class="action-label">Parrainage</span>
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <h3>📣 Actus du resto</h3>
+                    <a href="#" onclick="switchTab('feed'); return false;">Voir tout</a>
+                </div>
+                <div class="feed-preview" id="home-feed-preview">
+                    <!-- Feed items loaded dynamically -->
+                </div>
+
+                <div class="section-header">
+                    <h3>🏆 Tes prochaines récompenses</h3>
+                </div>
+                <div class="rewards-preview">
+                    <div class="reward-card upcoming">
+                        <div class="reward-icon">🍹</div>
+                        <div class="reward-info">
+                            <span class="reward-name">Boisson offerte</span>
+                            <span class="reward-progress">Plus que 2 visites !</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Loyalty Tab -->
+            <section id="tab-loyalty" class="tab-content">
+                <div class="loyalty-header">
+                    <h2>Ta Carte Fidélité 💳</h2>
+                    <p>Chaque visite te rapproche d'un cadeau !</p>
+                </div>
+
+                <div class="loyalty-card">
+                    <div class="card-header">
+                        <span class="card-title">Machi Mochkil</span>
+                        <span class="card-subtitle">Carte Premium</span>
+                    </div>
+                    <div class="stamps-grid" id="stamps-grid">
+                        <!-- Stamps dynamically generated -->
+                    </div>
+                    <div class="card-footer">
+                        <span class="visits-text"><span id="current-visits">3</span> visite(s)</span>
+                        <span class="next-reward">🎁 Prochaine récompense : <span id="next-reward-visits">2</span>
+                            visites</span>
+                    </div>
+                </div>
+
+                <div class="rewards-section">
+                    <h3>🎁 Paliers de récompenses</h3>
+                    <div class="rewards-timeline">
+                        <div class="reward-milestone achieved">
+                            <div class="milestone-marker">✓</div>
+                            <div class="milestone-info">
+                                <span class="milestone-visits">3 visites</span>
+                                <span class="milestone-reward">Boisson offerte</span>
+                            </div>
+                        </div>
+                        <div class="reward-milestone current">
+                            <div class="milestone-marker">5</div>
+                            <div class="milestone-info">
+                                <span class="milestone-visits">5 visites</span>
+                                <span class="milestone-reward">Dessert offert</span>
+                            </div>
+                        </div>
+                        <div class="reward-milestone">
+                            <div class="milestone-marker">8</div>
+                            <div class="milestone-info">
+                                <span class="milestone-visits">8 visites</span>
+                                <span class="milestone-reward">-20% sur ta commande</span>
+                            </div>
+                        </div>
+                        <div class="reward-milestone">
+                            <div class="milestone-marker">10</div>
+                            <div class="milestone-info">
+                                <span class="milestone-visits">10 visites</span>
+                                <span class="milestone-reward">🍔 Repas complet offert !</span>
+                            </div>
+                        </div>
+                        <div class="reward-milestone legendary">
+                            <div class="milestone-marker">15</div>
+                            <div class="milestone-info">
+                                <span class="milestone-visits">15 visites</span>
+                                <span class="milestone-reward">🎒 Goodies exclusifs !</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="my-rewards-section">
+                    <h3>🎉 Mes récompenses disponibles</h3>
+                    <div class="available-rewards" id="available-rewards">
+                        <div class="available-reward">
+                            <span class="reward-emoji">🍹</span>
+                            <div class="reward-details">
+                                <span class="reward-title">Boisson offerte</span>
+                                <span class="reward-validity">Valable jusqu'au 31/12</span>
+                            </div>
+                            <button class="btn-use-reward" onclick="useReward('drink')">Utiliser</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contests Tab -->
+            <section id="tab-contests" class="tab-content">
+                <div class="contests-header">
+                    <h2>Jeux & Concours 🎰</h2>
+                    <p>Tente ta chance et gagne des cadeaux !</p>
+                </div>
+
+                <div class="active-contest">
+                    <div class="contest-card featured">
+                        <div class="contest-badge">🔥 EN COURS</div>
+                        <div class="contest-image">
+                            <div class="contest-emoji">🎄</div>
+                        </div>
+                        <div class="contest-info">
+                            <h3>Concours de Noël 🎅</h3>
+                            <p>Gagne un repas pour 4 + des goodies exclusifs !</p>
+                            <div class="contest-timer">
+                                <span class="timer-label">Fin dans</span>
+                                <div class="timer-countdown" id="contest-timer">
+                                    <span class="timer-unit"><span id="timer-days">5</span>j</span>
+                                    <span class="timer-unit"><span id="timer-hours">12</span>h</span>
+                                    <span class="timer-unit"><span id="timer-mins">34</span>m</span>
+                                </div>
+                            </div>
+                            <div class="contest-participants">
+                                <span>👥 <span id="participants-count">247</span> participants</span>
+                            </div>
+                        </div>
+                        <button class="btn-primary btn-participate" onclick="participateContest()">
+                            <span>Participer</span>
+                            <span class="btn-emoji">🍀</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="past-contests">
+                    <h3>📜 Concours passés</h3>
+                    <div class="past-contest-list">
+                        <div class="past-contest">
+                            <span class="past-contest-emoji">🎃</span>
+                            <div class="past-contest-info">
+                                <span class="past-contest-name">Halloween Spooky</span>
+                                <span class="past-contest-date">Octobre 2024</span>
+                            </div>
+                            <span class="past-contest-status">Terminé</span>
+                        </div>
+                        <div class="past-contest winner">
+                            <span class="past-contest-emoji">☀️</span>
+                            <div class="past-contest-info">
+                                <span class="past-contest-name">Summer Vibes</span>
+                                <span class="past-contest-date">Août 2024</span>
+                            </div>
+                            <span class="past-contest-status won">🏆 Gagné !</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="instant-games">
+                    <h3>🎮 Mini-jeux</h3>
+                    <p class="games-subtitle">Joue et gagne des points fidélité !</p>
+                    <div class="games-grid">
+                        <div class="game-card featured" onclick="openTurtleSurf()">
+                            <div class="game-icon">🐢</div>
+                            <span class="game-name">Turtle Surf</span>
+                            <span class="game-reward">Jusqu'à +100 pts</span>
+                            <span class="game-badge">🌊 NOUVEAU</span>
+                        </div>
+                        <div class="game-card" onclick="showComingSoon()">
+                            <div class="game-icon">🎰</div>
+                            <span class="game-name">Roue de la chance</span>
+                            <span class="game-reward">+10 à +100 pts</span>
+                        </div>
+                        <div class="game-card" onclick="showComingSoon()">
+                            <div class="game-icon">❓</div>
+                            <span class="game-name">Quiz Machi</span>
+                            <span class="game-reward">+50 pts/bonne réponse</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Referral Tab -->
+            <section id="tab-referral" class="tab-content">
+                <div class="referral-header">
+                    <h2>Parraine tes potes 👥</h2>
+                    <p>Toi et ton filleul gagnez des récompenses !</p>
+                </div>
+
+                <div class="referral-rewards-preview">
+                    <div class="referral-reward-card">
+                        <span class="reward-for">Pour toi</span>
+                        <span class="reward-value">+200 pts</span>
+                        <span class="reward-plus">+</span>
+                        <span class="reward-bonus">🍟 Frites offertes</span>
+                    </div>
+                    <div class="referral-divider">
+                        <span>💝</span>
+                    </div>
+                    <div class="referral-reward-card">
+                        <span class="reward-for">Pour ton filleul</span>
+                        <span class="reward-value">+100 pts</span>
+                        <span class="reward-plus">+</span>
+                        <span class="reward-bonus">🍹 Boisson offerte</span>
+                    </div>
+                </div>
+
+                <div class="referral-code-section">
+                    <h3>Ton code parrain</h3>
+                    <div class="referral-code-box">
+                        <span class="referral-code" id="referral-code">MACHI-FOODIE-2024</span>
+                        <button class="copy-btn" onclick="copyReferralCode()">📋 Copier</button>
+                    </div>
+                </div>
+
+                <div class="share-section">
+                    <h3>Partage facilement</h3>
+                    <div class="share-buttons">
+                        <button class="share-btn whatsapp" onclick="shareVia('whatsapp')">
+                            <span>📱</span>
+                            WhatsApp
+                        </button>
+                        <button class="share-btn sms" onclick="shareVia('sms')">
+                            <span>💬</span>
+                            SMS
+                        </button>
+                        <button class="share-btn qr" onclick="showQRCode()">
+                            <span>📷</span>
+                            QR Code
+                        </button>
+                        <button class="share-btn more" onclick="shareVia('more')">
+                            <span>🔗</span>
+                            Autres
+                        </button>
+                    </div>
+                </div>
+
+                <div class="referral-stats">
+                    <h3>Tes stats parrainage</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-value" id="total-referrals">3</span>
+                            <span class="stat-label">Filleuls</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="pending-referrals">1</span>
+                            <span class="stat-label">En attente</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="referral-points">600</span>
+                            <span class="stat-label">Points gagnés</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="referral-history">
+                    <h3>Historique</h3>
+                    <div class="referral-list" id="referral-list">
+                        <div class="referral-item">
+                            <span class="referral-avatar">👤</span>
+                            <div class="referral-info">
+                                <span class="referral-name">Sophie M.</span>
+                                <span class="referral-date">Il y a 2 jours</span>
+                            </div>
+                            <span class="referral-status validated">✓ Validé</span>
+                        </div>
+                        <div class="referral-item">
+                            <span class="referral-avatar">👤</span>
+                            <div class="referral-info">
+                                <span class="referral-name">Lucas T.</span>
+                                <span class="referral-date">Il y a 1 semaine</span>
+                            </div>
+                            <span class="referral-status validated">✓ Validé</span>
+                        </div>
+                        <div class="referral-item pending">
+                            <span class="referral-avatar">👤</span>
+                            <div class="referral-info">
+                                <span class="referral-name">Emma R.</span>
+                                <span class="referral-date">Il y a 3 jours</span>
+                            </div>
+                            <span class="referral-status">⏳ En attente</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Feed Tab -->
+            <section id="tab-feed" class="tab-content">
+                <div class="feed-header">
+                    <h2>Actus & Mood 📣</h2>
+                    <p>Les news, les vibes, le mood Machi Mochkil</p>
+                </div>
+
+                <div class="feed-filters">
+                    <button class="filter-btn active" data-filter="all">Tout</button>
+                    <button class="filter-btn" data-filter="news">📰 News</button>
+                    <button class="filter-btn" data-filter="quotes">💬 Citations</button>
+                    <button class="filter-btn" data-filter="events">🎉 Events</button>
+                </div>
+
+                <div class="feed-list" id="feed-list">
+                    <!-- Feed items loaded dynamically -->
+                </div>
+            </section>
+
+            <!-- Profile Tab -->
+            <section id="tab-profile" class="tab-content">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <span id="profile-avatar-emoji">😎</span>
+                    </div>
+                    <h2 id="profile-name">Foodie</h2>
+                    <p class="profile-member-since">Membre depuis décembre 2024</p>
+                </div>
+
+                <div class="profile-stats">
+                    <div class="profile-stat">
+                        <span class="stat-value" id="profile-visits">3</span>
+                        <span class="stat-label">Visites</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="stat-value" id="profile-points">350</span>
+                        <span class="stat-label">Points</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="stat-value" id="profile-level">1</span>
+                        <span class="stat-label">Niveau</span>
+                    </div>
+                </div>
+
+                <div class="profile-menu">
+                    <div class="menu-item" onclick="showSettings('account')">
+                        <span class="menu-icon">👤</span>
+                        <span class="menu-label">Mon compte</span>
+                        <span class="menu-arrow">›</span>
+                    </div>
+                    <div class="menu-item" onclick="showSettings('notifications')">
+                        <span class="menu-icon">🔔</span>
+                        <span class="menu-label">Notifications</span>
+                        <span class="menu-arrow">›</span>
+                    </div>
+                    <div class="menu-item" onclick="showSettings('location')">
+                        <span class="menu-icon">📍</span>
+                        <span class="menu-label">Géolocalisation</span>
+                        <span class="menu-arrow">›</span>
+                    </div>
+                    <div class="menu-item" onclick="showSettings('privacy')">
+                        <span class="menu-icon">🔒</span>
+                        <span class="menu-label">Confidentialité & RGPD</span>
+                        <span class="menu-arrow">›</span>
+                    </div>
+                    <div class="menu-item" onclick="showSettings('help')">
+                        <span class="menu-icon">❓</span>
+                        <span class="menu-label">Aide & FAQ</span>
+                        <span class="menu-arrow">›</span>
+                    </div>
+                    <div class="menu-item" onclick="showSettings('about')">
+                        <span class="menu-icon">ℹ️</span>
+                        <span class="menu-label">À propos</span>
+                        <span class="menu-arrow">›</span>
+                    </div>
+                </div>
+
+                <button class="btn-logout" onclick="handleLogout()">
+                    <span>Se déconnecter</span>
+                    <span>👋</span>
+                </button>
+            </section>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-tab="home" onclick="switchTab('home')">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Accueil</span>
+            </button>
+            <button class="nav-item" data-tab="loyalty" onclick="switchTab('loyalty')">
+                <span class="nav-icon">💳</span>
+                <span class="nav-label">Fidélité</span>
+            </button>
+            <button class="nav-item" data-tab="contests" onclick="switchTab('contests')">
+                <span class="nav-icon">🎰</span>
+                <span class="nav-label">Jeux</span>
+            </button>
+            <button class="nav-item" data-tab="referral" onclick="switchTab('referral')">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Parrainage</span>
+            </button>
+            <button class="nav-item" data-tab="feed" onclick="switchTab('feed')">
+                <span class="nav-icon">📣</span>
+                <span class="nav-label">Actus</span>
+            </button>
+            <button class="nav-item" data-tab="profile" onclick="switchTab('profile')">
+                <span class="nav-icon">👤</span>
+                <span class="nav-label">Profil</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
