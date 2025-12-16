@@ -2,7 +2,9 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const dbPath = process.env.DATABASE_URL || (process.env.VERCEL ? '/tmp/machi.db' : path.join(__dirname, 'machi.db'));
+// Use in-memory DB on Vercel to avoid all filesystem/permission issues.
+// Note: Data will reset on function cold start, but the app will NOT crash.
+const dbPath = process.env.DATABASE_URL || (process.env.VERCEL ? ':memory:' : path.join(__dirname, 'machi.db'));
 const db = new Database(dbPath);
 
 // Enable foreign keys
@@ -138,6 +140,6 @@ if (feedCount.count === 0) {
     });
 }
 
-console.log('✅ Database initialized');
+console.log(`✅ Database initialized in ${process.env.VERCEL ? 'IN-MEMORY (Vercel)' : 'FILE (Local)'} mode`);
 
 module.exports = db;
