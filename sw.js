@@ -1,4 +1,4 @@
-const CACHE_NAME = 'machi-mouchkil-v1';
+const CACHE_NAME = 'machi-mouchkil-v2';
 const urlsToCache = [
     '/',
     '/index.html',

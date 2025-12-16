@@ -407,29 +407,42 @@ function updatePoints() {
 
 // ==================== Mascot System ====================
 function updateMascotUI() {
+    console.log('🐢 Updating Mascot UI...', AppState.user);
     const user = AppState.user;
     if (!user) return;
 
-    // XP & Level
-    document.getElementById('mascot-level').textContent = user.mascot_level;
-    document.getElementById('mascot-xp').textContent = user.mascot_xp;
-    document.getElementById('mascot-xp-fill').style.width = `${user.mascot_xp}%`;
-    document.getElementById('mascot-stage').textContent = user.mascot_stage;
+    // XP & Level - Safety check
+    const xp = user.mascot_xp !== undefined ? user.mascot_xp : 0;
+    const level = user.mascot_level !== undefined ? user.mascot_level : 1;
+
+    const xpEl = document.getElementById('mascot-xp');
+    if (xpEl) xpEl.textContent = xp;
+
+    const levelEl = document.getElementById('mascot-level');
+    if (levelEl) levelEl.textContent = level;
+
+    const xpFill = document.getElementById('mascot-xp-fill');
+    if (xpFill) xpFill.style.width = `${Math.min(100, xp)}%`;
+
+    document.getElementById('mascot-stage').textContent = user.mascot_stage || 'Bébé';
 
     // Emoji based on stage
     const emojis = {
-        'baby': '🥚',
-        'toddler': '🐢',
+        'egg': '🥚',
+        'baby': '🐢',
+        'child': '🐢',
         'teen': '🐬',
         'adult': '🦈'
     };
-    document.querySelector('.mascot-avatar').textContent = emojis[user.mascot_stage] || '🥚';
+    const avatar = document.querySelector('.mascot-avatar');
+    if (avatar) avatar.textContent = emojis[user.mascot_stage] || '🐢';
 
     // Stats Bars & Actions
-    updateStatBar('hunger', user.mascot_hunger);
-    updateStatBar('energy', user.mascot_energy);
-    updateStatBar('happiness', user.mascot_happiness);
-    updateStatBar('hygiene', user.mascot_hygiene);
+    // Ensure values exist or default to 50
+    updateStatBar('hunger', user.mascot_hunger ?? 50);
+    updateStatBar('energy', user.mascot_energy ?? 50);
+    updateStatBar('happiness', user.mascot_happiness ?? 50);
+    updateStatBar('hygiene', user.mascot_hygiene ?? 50);
 
     // Disable buttons if maxed/depleted logic is wanted visually
     // (Optional: visual disabled state based on backend rules)
