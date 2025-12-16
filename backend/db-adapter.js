@@ -12,7 +12,10 @@ class DBAdapter {
                 ssl: { rejectUnauthorized: false }
             });
         } else {
+        } else {
             console.log('📂 Using Local SQLite');
+            const Database = require('better-sqlite3');
+            const path = require('path');
             // Lazy load better-sqlite3 only if needed (though it's standard here)
             this.sqlite = new Database(path.join(__dirname, 'machi.db'));
             this.sqlite.pragma('foreign_keys = ON');
