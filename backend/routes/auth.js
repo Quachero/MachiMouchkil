@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { v4: uuid } = require('uuid');
-const db = require('../database');
+const db = require('../db-adapter');
 const { generateToken } = require('../middleware/auth');
 
 // Generate unique referral code
@@ -23,7 +23,7 @@ router.post('/register', async (req, res) => {
         }
 
         // Check if email exists
-        const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+        const existing = await db.get('SELECT id FROM users WHERE email = ?', [email]);
         if (existing) {
             return res.status(400).json({ error: 'Email already registered' });
         }
@@ -38,30 +38,36 @@ router.post('/register', async (req, res) => {
         // Check if referred by someone
         let referredBy = null;
         if (referralCode) {
-            const referrer = db.prepare('SELECT id FROM users WHERE referral_code = ?').get(referralCode);
+            const referrer = await db.get('SELECT id FROM users WHERE referral_code = ?', [referralCode]);
             if (referrer) {
                 referredBy = referrer.id;
             }
         }
 
-        db.prepare(`
+        await db.run(`
             INSERT INTO users (id, name, email, password_hash, phone, referral_code, referred_by, points)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(userId, name, email, passwordHash, phone || null, userReferralCode, referredBy, referredBy ? 100 : 0);
+        `, [userId, name, email, passwordHash, phone || null, userReferralCode, referredBy, referredBy ? 100 : 0]);
 
         // If referred, give bonus to referrer
         if (referredBy) {
-            db.prepare('UPDATE users SET points = points + 200 WHERE id = ?').run(referredBy);
+            await db.run('UPDATE users SET points = points + 200 WHERE id = ?', [referredBy]);
         }
 
-        // Give welcome reward
-        db.prepare(`
+        // Give welcome reward - Postgres requires interval syntax differences, but adapter doesn't fix logic
+        // We handle date logic in JS to be safe across both
+        // Or we use standard SQL. SQLite: datetime('now', '+30 days'). PG: NOW() + INTERVAL '30 days'
+        // Let's use JS date for maximum compatibility
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30);
+
+        await db.run(`
             INSERT INTO rewards (id, user_id, type, name, expires_at)
-            VALUES (?, ?, 'drink', 'Boisson offerte', datetime('now', '+30 days'))
-        `).run(uuid(), userId);
+            VALUES (?, ?, 'drink', 'Boisson offerte', ?)
+        `, [uuid(), userId, expiresAt.toISOString()]);
 
         // Get created user
-        const user = db.prepare('SELECT id, name, email, points, visits, mascot_level, referral_code FROM users WHERE id = ?').get(userId);
+        const user = await db.get('SELECT id, name, email, points, visits, mascot_level, referral_code FROM users WHERE id = ?', [userId]);
         const token = generateToken(user);
 
         res.status(201).json({
@@ -85,7 +91,7 @@ router.post('/login', async (req, res) => {
         }
 
         // Find user
-        const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+        const user = await db.get('SELECT * FROM users WHERE email = ?', [email]);
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
