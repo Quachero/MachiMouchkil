@@ -42,12 +42,22 @@ app.get('*', (req, res) => {
 
 // Error handling
 app.use((err, req, res, next) => {
-    console.error('❌ Error:', err.message);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Error:', err.message, err.stack);
+    res.status(500).json({ error: 'Internal server error', details: err.message });
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`🏄‍♂️ Machi Mochkil API running on port ${PORT}`);
-    console.log(`🌊 http://localhost:${PORT}`);
+// Global checking
+process.on('unhandledRejection', (reason, p) => {
+    console.error('Unhandled Rejection at:', p, 'reason:', reason);
 });
+
+// Start server if running directly (Local)
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`🏄‍♂️ Machi Mochkil API running on port ${PORT}`);
+        console.log(`🌊 http://localhost:${PORT}`);
+    });
+}
+
+// Export for Vercel Serverless
+module.exports = app;
