@@ -32,7 +32,6 @@ app.use('/api/feed', require('./routes/feed'));
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: '🐢 Machi Mouchkil API is running!' });
-    // ...
     console.log(`🏄‍♂️ Machi Mouchkil API running on port ${PORT}`);
 });
 

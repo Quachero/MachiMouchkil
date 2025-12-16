@@ -13,14 +13,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Machi Mouchkil">
-    // ...
-    <h1 class="brand-title">Machi<span>Mouchkil</span></h1>
-    // ...
-    <h2>Bienvenue chez Machi Mouchkil ! 🌴</h2>
-    // ...
-    <span class="card-title">Machi Mouchkil</span>
-    // ...
-    <p>Les news, les vibes, le mood Machi Mouchkil</p>
     <link rel="apple-touch-icon" href="icons/icon-192.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -269,27 +261,28 @@
                         </div>
 
                         <!-- Needs Stats -->
+                        <!-- Needs Stats -->
                         <div class="mascot-stats-grid">
                             <div class="stat-item">
-                                <span class="stat-icon">🍎</span>
+                                <div class="stat-header"><span>Faim</span> <span>🍎</span></div>
                                 <div class="stat-bar-container">
                                     <div class="stat-bar-fill" id="stat-hunger" style="width: 50%"></div>
                                 </div>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-icon">⚡</span>
+                                <div class="stat-header"><span>Énergie</span> <span>⚡</span></div>
                                 <div class="stat-bar-container">
                                     <div class="stat-bar-fill" id="stat-energy" style="width: 50%"></div>
                                 </div>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-icon">😄</span>
+                                <div class="stat-header"><span>Bonheur</span> <span>😄</span></div>
                                 <div class="stat-bar-container">
                                     <div class="stat-bar-fill" id="stat-happiness" style="width: 50%"></div>
                                 </div>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-icon">🚿</span>
+                                <div class="stat-header"><span>Hygiène</span> <span>🚿</span></div>
                                 <div class="stat-bar-container">
                                     <div class="stat-bar-fill" id="stat-hygiene" style="width: 50%"></div>
                                 </div>
@@ -298,14 +291,22 @@
 
                         <!-- Actions -->
                         <div class="mascot-actions">
-                            <button class="action-btn" onclick="handleInteraction('feed')" id="btn-feed">🍎
-                                Manger</button>
-                            <button class="action-btn" onclick="handleInteraction('sleep')" id="btn-sleep">😴
-                                Dormir</button>
-                            <button class="action-btn" onclick="handleInteraction('play')" id="btn-play">🎾
-                                Jouer</button>
-                            <button class="action-btn" onclick="handleInteraction('clean')" id="btn-clean">🚿
-                                Laver</button>
+                            <button class="action-btn" onclick="handleInteraction('feed')" id="btn-feed">
+                                <span class="btn-icon">🍎</span>
+                                <span>Manger</span>
+                            </button>
+                            <button class="action-btn" onclick="handleInteraction('sleep')" id="btn-sleep">
+                                <span class="btn-icon">😴</span>
+                                <span>Dormir</span>
+                            </button>
+                            <button class="action-btn" onclick="handleInteraction('play')" id="btn-play">
+                                <span class="btn-icon">🎾</span>
+                                <span>Jouer</span>
+                            </button>
+                            <button class="action-btn" onclick="handleInteraction('clean')" id="btn-clean">
+                                <span class="btn-icon">🚿</span>
+                                <span>Laver</span>
+                            </button>
                         </div>
                         <div class="mascot-mood">
                             <span>Humeur :</span>

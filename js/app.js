@@ -1,18 +1,4 @@
 // Machi Mouchkil App - Main JavaScript
-// ...
-excerpt: '- L\'équipe Machi Mouchkil 💪',
-    // ...
-    "Machi Mouchkil, c'est la vibe ! 🤙",
-    // ...
-    <p><strong>Quel est ton burger préféré chez Machi Mouchkil ?</strong></p>
-// ...
-const message = `Rejoins-moi sur Machi Mouchkil ! Utilise mon code ${code} et gagne une boisson offerte 🍹 https://machimochkil.app/join/${code}`;
-// ...
-navigator.share({ title: 'Machi Mouchkil', text: message });
-// ...
-                <p><strong>Machi Mouchkil</strong></p>
-// ...
-                <p>© 2024 Machi Mouchkil</p>
 
 // ==================== App State ====================
 const AppState = {
@@ -192,32 +178,83 @@ function listenGameEvents() {
 async function handleInteraction(action) {
     if (!AppState.isLoggedIn) return;
 
+    // 1. Optimistic Updates (Visual Feedback First)
+    const originalUser = { ...AppState.user }; // Backup in case of error
+    let optimisticUpdates = {};
+    let animationClass = '';
+
+    // Simulate logic for instant feedback (matches backend roughly)
+    const user = AppState.user;
+    switch (action) {
+        case 'feed':
+            if (user.mascot_hunger >= 90) return showToast('Il n\'a pas faim !', 'info');
+            optimisticUpdates = { mascot_hunger: Math.min(100, user.mascot_hunger + 30), mascot_energy: Math.max(0, user.mascot_energy - 5) };
+            animationClass = 'anim-bounce';
+            break;
+        case 'sleep':
+            if (user.mascot_energy >= 90) return showToast('Il n\'est pas fatigué !', 'info');
+            optimisticUpdates = { mascot_energy: 100, mascot_hunger: Math.max(0, user.mascot_hunger - 20) };
+            animationClass = 'anim-sleep';
+            break;
+        case 'play':
+            if (user.mascot_happiness >= 90) return showToast('Il est déjà au top !', 'info');
+            if (user.mascot_energy < 20) return showToast('Trop fatigué pour jouer...', 'warning');
+            optimisticUpdates = { mascot_happiness: Math.min(100, user.mascot_happiness + 20), mascot_energy: Math.max(0, user.mascot_energy - 15) };
+            animationClass = 'anim-happy';
+            break;
+        case 'clean':
+            if (user.mascot_hygiene >= 90) return showToast('Déjà tout propre !', 'info');
+            optimisticUpdates = { mascot_hygiene: 100, mascot_happiness: Math.min(100, user.mascot_happiness + 5) };
+            animationClass = 'anim-shake';
+            break;
+    }
+
+    // Apply Optimistic State
+    AppState.user = { ...AppState.user, ...optimisticUpdates };
+    updateMascotUI(); // Refresh UI immediately (bars move instantly)
+    triggerMascotAnimation(animationClass); // Trigger animation
+
     try {
+        // 2. Network Request
         const result = await window.api.interactMascot(action);
 
         if (result.error) {
+            // Revert on API error (business logic reject)
+            AppState.user = originalUser;
+            updateMascotUI();
             showToast(result.error, 'error');
             return;
         }
 
-        // Update local state with new stats
+        // 3. Confirm with Authoritative Data
         AppState.user = { ...AppState.user, ...result.stats };
-
-        // Save & Update UI
         saveState();
-        updateUI();
+        updateMascotUI(); // Sync with exact backend values
 
+        // Show success message
         showToast(result.message, 'success');
 
-        // Simple animation
-        const avatar = document.querySelector('.mascot-avatar');
-        avatar.style.transform = 'scale(1.2)';
-        setTimeout(() => avatar.style.transform = 'scale(1)', 200);
-
     } catch (err) {
+        // Revert on Network error
         console.error('Interaction failed', err);
+        AppState.user = originalUser;
+        updateMascotUI();
         showToast('Erreur de connexion...', 'error');
     }
+}
+
+function triggerMascotAnimation(animClass) {
+    const avatar = document.querySelector('.mascot-avatar');
+    if (!avatar || !animClass) return;
+
+    // Reset animations
+    avatar.classList.remove('anim-bounce', 'anim-shake', 'anim-happy', 'anim-sleep');
+
+    // Force reflow
+    void avatar.offsetWidth;
+
+    // Apply new animation
+    avatar.classList.add(animClass);
 }
 
 // ==================== Screen Management ====================

@@ -14,8 +14,6 @@ self.addEventListener('install', event => {
         caches.open(CACHE_NAME)
             .then(cache => {
                 console.log('🏄‍♂️ Machi Mouchkil: Caching app shell');
-                // ...
-                self.registration.showNotification('Machi Mouchkil 🏄‍♂️', options)
                 return cache.addAll(urlsToCache);
             })
             .then(() => self.skipWaiting())
