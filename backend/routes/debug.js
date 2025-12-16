@@ -50,4 +50,53 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get('/simulate-register', async (req, res) => {
+    const report = { steps: [] };
+    try {
+        const userId = uuid();
+        const email = `sim-${Date.now()}@test.com`;
+
+        report.steps.push(`1. Generated ID: ${userId}, Email: ${email}`);
+
+        // Try Insert
+        try {
+            report.steps.push('2. Attempting INSERT users...');
+            await db.run(`
+                INSERT INTO users (id, name, email, password_hash, phone, points)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, [userId, 'Simulated User', email, 'hash123', null, 100]);
+            report.steps.push('3. INSERT users successful');
+        } catch (e) {
+            report.steps.push(`ERROR INSERT users: ${e.message}`);
+            throw e;
+        }
+
+        // Try Rewards
+        try {
+            report.steps.push('4. Attempting INSERT rewards...');
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + 30);
+            await db.run(`
+                INSERT INTO rewards (id, user_id, type, name, expires_at)
+                VALUES (?, ?, 'drink', 'Boisson offerte', ?)
+            `, [uuid(), userId, expiresAt.toISOString()]);
+            report.steps.push('5. INSERT rewards successful');
+        } catch (e) {
+            report.steps.push(`ERROR INSERT rewards: ${e.message}`);
+            // Don't throw, just report
+        }
+
+        // Select Back
+        const user = await db.get('SELECT * FROM users WHERE id = ?', [userId]);
+        report.found_user = user;
+        report.success = !!user;
+
+        res.json(report);
+
+    } catch (err) {
+        report.fatal_error = err.message;
+        res.status(500).json(report);
+    }
+});
+
 module.exports = router;
