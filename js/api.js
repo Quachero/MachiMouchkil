@@ -37,16 +37,26 @@ class ApiClient {
                 headers
             });
 
-            const data = await response.json();
+            // Handle non-JSON responses (like 404 HTML pages from Vercel)
+            const contentType = response.headers.get('content-type');
+            let data;
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                console.warn('API returned non-JSON:', text);
+                throw new Error(`API Error ${response.status}: ${response.statusText}`);
+            }
 
             if (!response.ok) {
-                throw new Error(data.error || 'API request failed');
+                throw new Error(data.error || `API returned ${response.status}`);
             }
 
             return data;
         } catch (error) {
-            console.warn('API unavailable, using local mode:', error.message);
-            throw error;
+            console.error('API Request Failed:', error);
+            // Re-throw with more detail for the UI
+            throw new Error(error.message);
         }
     }
 
