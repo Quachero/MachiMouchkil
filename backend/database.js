@@ -2,7 +2,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const dbPath = process.env.DATABASE_URL || path.join(__dirname, 'machi.db');
+const dbPath = process.env.DATABASE_URL || (process.env.VERCEL ? '/tmp/machi.db' : path.join(__dirname, 'machi.db'));
 const db = new Database(dbPath);
 
 // Enable foreign keys
@@ -93,17 +93,19 @@ db.exec(`
 `);
 
 // Schema Migration: Add new columns if they don't exist (for local dev persistence)
+// Schema Migration: Add new columns if they don't exist
 try {
     const tableInfo = db.prepare('PRAGMA table_info(users)').all();
     const columns = tableInfo.map(c => c.name);
 
+    // Only try to alter if we think we can (might fail on read-only FS)
     if (!columns.includes('mascot_hunger')) db.exec('ALTER TABLE users ADD COLUMN mascot_hunger INTEGER DEFAULT 50');
     if (!columns.includes('mascot_energy')) db.exec('ALTER TABLE users ADD COLUMN mascot_energy INTEGER DEFAULT 50');
     if (!columns.includes('mascot_happiness')) db.exec('ALTER TABLE users ADD COLUMN mascot_happiness INTEGER DEFAULT 50');
     if (!columns.includes('mascot_hygiene')) db.exec('ALTER TABLE users ADD COLUMN mascot_hygiene INTEGER DEFAULT 50');
     if (!columns.includes('mascot_last_update')) db.exec('ALTER TABLE users ADD COLUMN mascot_last_update DATETIME DEFAULT CURRENT_TIMESTAMP');
 } catch (err) {
-    console.log('Migration note:', err.message);
+    console.warn('Migration skipped/failed (expected on Vercel):', err.message);
 }
 
 // Insert default contest if none exists
