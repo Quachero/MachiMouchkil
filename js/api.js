@@ -92,6 +92,13 @@ class ApiClient {
         });
     }
 
+    async interactMascot(action) {
+        return this.request('/users/interact', {
+            method: 'POST',
+            body: JSON.stringify({ action })
+        });
+    }
+
     // Loyalty
     async recordVisit() {
         return this.request('/loyalty/visit', { method: 'POST' });

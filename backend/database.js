@@ -22,6 +22,11 @@ db.exec(`
         mascot_level INTEGER DEFAULT 1,
         mascot_xp INTEGER DEFAULT 0,
         mascot_stage TEXT DEFAULT 'baby',
+        mascot_hunger INTEGER DEFAULT 50,
+        mascot_energy INTEGER DEFAULT 50,
+        mascot_happiness INTEGER DEFAULT 50,
+        mascot_hygiene INTEGER DEFAULT 50,
+        mascot_last_update DATETIME DEFAULT CURRENT_TIMESTAMP,
         referral_code TEXT UNIQUE,
         referred_by TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -86,6 +91,20 @@ db.exec(`
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 `);
+
+// Schema Migration: Add new columns if they don't exist (for local dev persistence)
+try {
+    const tableInfo = db.prepare('PRAGMA table_info(users)').all();
+    const columns = tableInfo.map(c => c.name);
+
+    if (!columns.includes('mascot_hunger')) db.exec('ALTER TABLE users ADD COLUMN mascot_hunger INTEGER DEFAULT 50');
+    if (!columns.includes('mascot_energy')) db.exec('ALTER TABLE users ADD COLUMN mascot_energy INTEGER DEFAULT 50');
+    if (!columns.includes('mascot_happiness')) db.exec('ALTER TABLE users ADD COLUMN mascot_happiness INTEGER DEFAULT 50');
+    if (!columns.includes('mascot_hygiene')) db.exec('ALTER TABLE users ADD COLUMN mascot_hygiene INTEGER DEFAULT 50');
+    if (!columns.includes('mascot_last_update')) db.exec('ALTER TABLE users ADD COLUMN mascot_last_update DATETIME DEFAULT CURRENT_TIMESTAMP');
+} catch (err) {
+    console.log('Migration note:', err.message);
+}
 
 // Insert default contest if none exists
 const contestCount = db.prepare('SELECT COUNT(*) as count FROM contests').get();

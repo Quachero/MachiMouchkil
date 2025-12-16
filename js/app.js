@@ -169,6 +169,38 @@ function listenGameEvents() {
     });
 }
 
+// ==================== Mascot Interaction ====================
+async function handleInteraction(action) {
+    if (!AppState.isLoggedIn) return;
+
+    try {
+        const result = await window.api.interactMascot(action);
+
+        if (result.error) {
+            showToast(result.error, 'error');
+            return;
+        }
+
+        // Update local state with new stats
+        AppState.user = { ...AppState.user, ...result.stats };
+
+        // Save & Update UI
+        saveState();
+        updateUI();
+
+        showToast(result.message, 'success');
+
+        // Simple animation
+        const avatar = document.querySelector('.mascot-avatar');
+        avatar.style.transform = 'scale(1.2)';
+        setTimeout(() => avatar.style.transform = 'scale(1)', 200);
+
+    } catch (err) {
+        console.error('Interaction failed', err);
+        showToast('Erreur de connexion...', 'error');
+    }
+}
+
 // ==================== Screen Management ====================
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(screen => {
@@ -318,23 +350,46 @@ function updatePoints() {
 }
 
 // ==================== Mascot System ====================
-function updateMascot() {
-    const { level, xp, stage } = AppState.mascot;
-    const stageData = mascotStages[stage];
+function updateMascotUI() {
+    const user = AppState.user;
+    if (!user) return;
 
-    document.querySelector('.mascot-body').textContent = stageData.emoji;
-    document.getElementById('mascot-level').textContent = level;
-    document.getElementById('mascot-stage').textContent = stageData.name;
-    document.getElementById('mascot-xp').textContent = xp;
-    document.getElementById('mascot-xp-fill').style.width = `${xp}%`;
+    // XP & Level
+    document.getElementById('mascot-level').textContent = user.mascot_level;
+    document.getElementById('mascot-xp').textContent = user.mascot_xp;
+    document.getElementById('mascot-xp-fill').style.width = `${user.mascot_xp}%`;
+    document.getElementById('mascot-stage').textContent = user.mascot_stage;
 
-    // Random message
-    const message = mascotMessages[Math.floor(Math.random() * mascotMessages.length)];
-    document.getElementById('mascot-speech').querySelector('p').textContent = message;
+    // Emoji based on stage
+    const emojis = {
+        'baby': '🥚',
+        'toddler': '🐢',
+        'teen': '🐬',
+        'adult': '🦈'
+    };
+    document.querySelector('.mascot-avatar').textContent = emojis[user.mascot_stage] || '🥚';
 
-    updateMascotMood();
+    // Stats Bars & Actions
+    updateStatBar('hunger', user.mascot_hunger);
+    updateStatBar('energy', user.mascot_energy);
+    updateStatBar('happiness', user.mascot_happiness);
+    updateStatBar('hygiene', user.mascot_hygiene);
+
+    // Disable buttons if maxed/depleted logic is wanted visually
+    // (Optional: visual disabled state based on backend rules)
+    document.getElementById('btn-feed').disabled = (user.mascot_hunger >= 90);
+    document.getElementById('btn-sleep').disabled = (user.mascot_energy >= 90);
+    document.getElementById('btn-play').disabled = (user.mascot_happiness >= 90 || user.mascot_energy < 20);
+    document.getElementById('btn-clean').disabled = (user.mascot_hygiene >= 90);
 }
 
+function updateStatBar(type, value) {
+    const bar = document.getElementById(`stat-${type}`);
+    if (bar) {
+        bar.style.width = `${value || 50}%`;
+        // Color logic is handled in CSS but could be dynamic here if needed
+    }
+}
 function updateMascotMood() {
     const moods = {
         happy: '😊 Content',
