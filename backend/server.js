@@ -31,7 +31,13 @@ app.use('/api/feed', require('./routes/feed'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: '🐢 Machi Mouchkil API is running!' });
+    const dbAdapter = require('./db-adapter');
+    res.json({
+        status: 'ok',
+        message: '🐢 Machi Mouchkil API is running!',
+        db_type: dbAdapter.type,
+        on_vercel: !!process.env.VERCEL
+    });
     console.log(`🏄‍♂️ Machi Mouchkil API running on port ${PORT}`);
 });
 

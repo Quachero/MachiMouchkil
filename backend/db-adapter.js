@@ -13,6 +13,16 @@ class DBAdapter {
             });
         } else {
             console.log('📂 Using Local SQLite');
+
+            // CRITICAL CHECK FOR VERCEL
+            if (process.env.VERCEL === '1') {
+                console.error('🚨 ERROR: Running on Vercel but DATABASE_URL is missing!');
+                console.error('   Please add DATABASE_URL to Vercel Project Settings > Environment Variables.');
+                // We do NOT want to fall back to SQLite on Vercel as it is ephemeral/read-only.
+                // It is better to crash and show error than to fake success.
+                throw new Error('Missing DATABASE_URL on Vercel environment');
+            }
+
             const Database = require('better-sqlite3');
             const path = require('path');
             // Lazy load better-sqlite3 only if needed (though it's standard here)
