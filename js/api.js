@@ -1,4 +1,4 @@
-// Machi Mochkil API Client
+// Machi Mouchkil API Client
 // Handles communication with backend API
 // Falls back to localStorage when API is unavailable
 

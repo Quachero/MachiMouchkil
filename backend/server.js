@@ -1,4 +1,4 @@
-// Machi Mochkil Backend - Main Server
+// Machi Mouchkil Backend - Main Server
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -31,7 +31,9 @@ app.use('/api/feed', require('./routes/feed'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: '🐢 Machi Mochkil API is running!' });
+    res.json({ status: 'ok', message: '🐢 Machi Mouchkil API is running!' });
+    // ...
+    console.log(`🏄‍♂️ Machi Mouchkil API running on port ${PORT}`);
 });
 
 // Serve frontend for any other route

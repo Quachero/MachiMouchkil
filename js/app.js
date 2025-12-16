@@ -1,4 +1,18 @@
-// Machi Mochkil App - Main JavaScript
+// Machi Mouchkil App - Main JavaScript
+// ...
+excerpt: '- L\'équipe Machi Mouchkil 💪',
+    // ...
+    "Machi Mouchkil, c'est la vibe ! 🤙",
+    // ...
+    <p><strong>Quel est ton burger préféré chez Machi Mouchkil ?</strong></p>
+// ...
+const message = `Rejoins-moi sur Machi Mouchkil ! Utilise mon code ${code} et gagne une boisson offerte 🍹 https://machimochkil.app/join/${code}`;
+// ...
+navigator.share({ title: 'Machi Mouchkil', text: message });
+// ...
+                <p><strong>Machi Mouchkil</strong></p>
+// ...
+                <p>© 2024 Machi Mouchkil</p>
 
 // ==================== App State ====================
 const AppState = {
@@ -91,14 +105,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function loadState() {
-    const savedState = localStorage.getItem('machiMochkilState');
+    const savedState = localStorage.getItem('machiMouchkilState');
     if (savedState) {
-        Object.assign(AppState, JSON.parse(savedState));
+        // Apply saved state
+        const state = JSON.parse(savedState);
+        console.log('State restored:', state);
+
+        // Merge saved state into AppState
+        Object.assign(AppState, state);
     }
 }
 
 function saveState() {
-    localStorage.setItem('machiMochkilState', JSON.stringify(AppState));
+    localStorage.setItem('machiMouchkilState', JSON.stringify(AppState));
 }
 
 function checkAuth() {

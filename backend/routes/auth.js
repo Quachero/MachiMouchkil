@@ -65,7 +65,7 @@ router.post('/register', async (req, res) => {
         const token = generateToken(user);
 
         res.status(201).json({
-            message: 'Welcome to Machi Mochkil! 🏄‍♂️',
+            message: 'Welcome to Machi Mouchkil! 🏄‍♂️',
             user,
             token
         });

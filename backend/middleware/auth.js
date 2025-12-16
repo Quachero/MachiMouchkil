@@ -1,7 +1,7 @@
 // JWT Authentication Middleware
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'machi-mochkil-secret-2024';
+const JWT_SECRET = process.env.JWT_SECRET || 'machi-mouchkil-secret-2024';
 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];

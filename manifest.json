@@ -1,5 +1,5 @@
 {
-    "name": "Machi Mochkil",
+    "name": "Machi Mouchkil",
     "short_name": "Machi",
     "description": "Ton resto, ton mood - Ride the wave, taste the vibe 🏄‍♂️",
     "start_url": "/index.html",
@@ -21,7 +21,11 @@
             "purpose": "any maskable"
         }
     ],
-    "categories": ["food", "lifestyle", "entertainment"],
+    "categories": [
+        "food",
+        "lifestyle",
+        "entertainment"
+    ],
     "lang": "fr-FR",
     "shortcuts": [
         {

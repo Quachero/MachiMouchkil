@@ -1,4 +1,4 @@
-// Machi Mochkil Backend - Database Setup (SQLite)
+// Machi Mouchkil Backend - Database Setup (SQLite)
 const Database = require('better-sqlite3');
 const path = require('path');
 
@@ -127,7 +127,7 @@ if (feedCount.count === 0) {
     const { v4: uuid } = require('uuid');
     const feedItems = [
         { type: 'news', title: '🎄 Menu de Noël disponible !', excerpt: 'Découvre notre sélection festive...', emoji: '🎄' },
-        { type: 'quote', title: '"La vie est trop courte pour manger mal"', excerpt: "- L'équipe Machi Mochkil 💪", emoji: '💬' },
+        { type: 'quote', title: '"La vie est trop courte pour manger mal"', excerpt: "- L'équipe Machi Mouchkil 💪", emoji: '💬' },
         { type: 'event', title: '🎉 Soirée Before de Noël', excerpt: 'Le 23 décembre, viens fêter avec nous !', emoji: '🎉' }
     ];
     const insert = db.prepare('INSERT INTO feed_items (id, type, title, excerpt, emoji) VALUES (?, ?, ?, ?, ?)');

@@ -1,7 +1,7 @@
 {
-    "name": "machi-mochkil",
+    "name": "machi-mouchkil",
     "version": "1.0.0",
-    "description": "Machi Mochkil - Restaurant loyalty app PWA",
+    "description": "Machi Mouchkil - Restaurant loyalty app PWA",
     "main": "backend/server.js",
     "scripts": {
         "start": "node backend/server.js",

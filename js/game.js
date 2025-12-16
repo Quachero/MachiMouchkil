@@ -1,5 +1,5 @@
 // Turtle Surf - Mini Game 🐢🌊
-// A Flappy Bird-like game with the Machi Mochkil turtle mascot
+// A Flappy Bird-like game with the Machi Mouchkil turtle mascot
 
 class TurtleSurfGame {
     constructor(canvas) {

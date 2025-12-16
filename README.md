@@ -88,4 +88,4 @@ Palette de couleurs océan avec mascotte tortue évolutive :
 
 ---
 
-Made with ❤️ for Machi Mochkil 🏄‍♂️
+Made with ❤️ for Machi Mouchkil 🏄‍♂️

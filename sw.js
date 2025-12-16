@@ -1,4 +1,4 @@
-const CACHE_NAME = 'machi-mochkil-v1';
+const CACHE_NAME = 'machi-mouchkil-v1';
 const urlsToCache = [
     '/',
     '/index.html',
@@ -13,7 +13,9 @@ self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                console.log('🏄‍♂️ Machi Mochkil: Caching app shell');
+                console.log('🏄‍♂️ Machi Mouchkil: Caching app shell');
+                // ...
+                self.registration.showNotification('Machi Mouchkil 🏄‍♂️', options)
                 return cache.addAll(urlsToCache);
             })
             .then(() => self.skipWaiting())
