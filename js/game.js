@@ -21,18 +21,18 @@ class TurtleSurfGame {
             width: 50,
             height: 40,
             velocity: 0,
-            gravity: 0.4,
-            jump: -8,
+            gravity: 0.35, // Lighter gravity (easier to control)
+            jump: -7, // Softer jump
             rotation: 0
         };
 
         // Obstacles (coral reefs)
         this.obstacles = [];
         this.obstacleWidth = 60;
-        this.obstacleGap = 150;
-        this.obstacleSpeed = 3;
+        this.obstacleGap = 180; // Easier start (was 150)
+        this.obstacleSpeed = 2.5; // Slower start (was 3)
         this.obstacleTimer = 0;
-        this.obstacleInterval = 100;
+        this.obstacleInterval = 120; // More time between pipes
 
         // Collectibles (shells)
         this.shells = [];
@@ -199,9 +199,12 @@ class TurtleSurfGame {
         // Wave effect
         this.waveOffset += 0.05;
 
-        // Increase difficulty
-        if (this.score > 0 && this.score % 10 === 0) {
-            this.obstacleSpeed = Math.min(6, 3 + this.score * 0.05);
+        // Progressive Difficulty
+        // Every 5 points: Speed up AND shrink gap slightly
+        if (this.score > 0 && this.score % 5 === 0) {
+            const difficultyMultiplier = Math.floor(this.score / 5);
+            this.obstacleSpeed = Math.min(6, 2.5 + (difficultyMultiplier * 0.2));
+            this.obstacleGap = Math.max(130, 180 - (difficultyMultiplier * 2)); // Shrinks gap down to 130
         }
     }
 
