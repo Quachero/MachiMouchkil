@@ -568,7 +568,13 @@ function addMascotXP(amount) {
     }
 
     saveState();
-    updateMascot();
+    updateMascotUI();
+
+    // Sync to backend
+    if (AppState.isLoggedIn) {
+        window.api.updateMascot(AppState.mascot.xp, AppState.mascot.level, AppState.mascot.stage)
+            .catch(err => console.error('XP Sync failed', err));
+    }
 }
 
 function updateMascotStage() {
@@ -612,10 +618,16 @@ function updateLoyaltyDisplay() {
     document.getElementById('next-reward-visits').textContent = remaining;
 }
 
-function addPoints(amount) {
+function addPoints(amount, reason = 'bonus') {
     AppState.loyalty.points += amount;
     saveState();
     updatePoints();
+
+    // Sync to backend
+    if (AppState.isLoggedIn) {
+        window.api.addPoints(amount, reason)
+            .catch(err => console.error('Points Sync failed', err));
+    }
 }
 
 function useReward(rewardType) {
