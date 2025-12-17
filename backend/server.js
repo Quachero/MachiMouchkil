@@ -30,6 +30,11 @@ app.use('/api/game', require('./routes/game'));
 app.use('/api/feed', require('./routes/feed'));
 app.use('/api/debug-db', require('./routes/debug'));
 
+// Simple Ping for routing check
+app.get('/api/ping', (req, res) => {
+    res.json({ pong: true, url: req.url });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
     const dbAdapter = require('./db-adapter');
