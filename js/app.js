@@ -290,17 +290,17 @@ async function refreshUserData() {
     }
 
     // ==================== Auth Functions ====================
-    function showLogin() {
+    window.showLogin = function () {
         document.getElementById('login-form').classList.remove('hidden');
         document.getElementById('register-form').classList.add('hidden');
-    }
+    };
 
-    function showRegister() {
+    window.showRegister = function () {
         document.getElementById('login-form').classList.add('hidden');
         document.getElementById('register-form').classList.remove('hidden');
-    }
+    };
 
-    async function handleLogin() {
+    window.handleLogin = async function () {
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
 
@@ -323,12 +323,13 @@ async function refreshUserData() {
         } catch (err) {
             showToast(err.message, 'error');
         }
-    }
+    };
 
-    async function handleRegister() {
+    window.handleRegister = async function () {
         const name = document.getElementById('register-name').value;
         const email = document.getElementById('register-email').value;
         const password = document.getElementById('register-password').value;
+        const phone = document.getElementById('register-phone').value;
 
         if (!name || !email || !password) {
             showToast('Remplis tous les champs obligatoires !', 'error');
@@ -348,7 +349,7 @@ async function refreshUserData() {
         } catch (err) {
             showToast(err.message, 'error');
         }
-    }
+    };
 
     function socialLogin(provider) {
         // Simulate social login
