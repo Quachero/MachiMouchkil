@@ -953,4 +953,3 @@ async function refreshUserData() {
         }, 3000);
     }
 
-}); // End of DOMContentLoaded
