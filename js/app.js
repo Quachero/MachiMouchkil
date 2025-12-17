@@ -936,3 +936,5 @@ async function refreshUserData() {
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
+
+}); // End of DOMContentLoaded
