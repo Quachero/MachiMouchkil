@@ -296,9 +296,11 @@ async function refreshUserData() {
     };
 
     window.showRegister = function () {
+        console.log('🔘 showRegister clicked');
         document.getElementById('login-form').classList.add('hidden');
         document.getElementById('register-form').classList.remove('hidden');
     };
+    console.log('✅ Auth functions exposed to window');
 
     window.handleLogin = async function () {
         const email = document.getElementById('login-email').value;
