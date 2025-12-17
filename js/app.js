@@ -222,21 +222,23 @@ async function refreshUserData() {
             handleLogout();
         }
     }
+}
 
-    // ==================== PWA Service Worker ====================
-    function registerServiceWorker() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('🏄‍♂️ Service Worker registered!', reg.scope))
-                .catch(err => console.log('Service Worker registration failed:', err));
-        }
+
+// ==================== PWA Service Worker ====================
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('🏄‍♂️ Service Worker registered!', reg.scope))
+            .catch(err => console.log('Service Worker registration failed:', err));
     }
+}
 
-    // ==================== Turtle Surf Game ====================
-    let turtleGame = null;
+// ==================== Turtle Surf Game ====================
+let turtleGame = null;
 
-    function openTurtleSurf() {
-        showModal(`
+function openTurtleSurf() {
+    showModal(`
         <div class="game-modal">
             <h2>🐢 Turtle Surf 🌊</h2>
             <p class="game-instructions">Tap ou clique pour nager et éviter les coraux !</p>
@@ -249,376 +251,376 @@ async function refreshUserData() {
         </div>
     `);
 
-        // Initialize game after modal is shown
-        setTimeout(() => {
-            const canvas = document.getElementById('game-canvas');
-            if (canvas && window.TurtleSurfGame) {
-                turtleGame = new TurtleSurfGame(canvas);
-            }
-        }, 100);
-    }
-
-    function listenGameEvents() {
-        window.addEventListener('gameOver', (e) => {
-            const { score, points } = e.detail;
-            if (points > 0) {
-                addPoints(points);
-                addMascotXP(Math.floor(score / 2));
-            }
-            // Update high score display
-            const hsEl = document.getElementById('game-high-score');
-            if (hsEl) {
-                hsEl.textContent = localStorage.getItem('turtleSurfHighScore') || 0;
-            }
-        });
-    }
-
-    // ==================== Mascot Interaction ====================
-    async function handleInteraction(action) {
-        if (!AppState.isLoggedIn) return;
-
-        // 1. Optimistic Updates (Visual Feedback First)
-        const originalUser = { ...AppState.user }; // Backup in case of error
-        let optimisticUpdates = {};
-        let animationClass = '';
-
-        // Simulate logic for instant feedback (matches backend roughly)
-        const user = AppState.user;
-        switch (action) {
-            case 'feed':
-                if (user.mascot_hunger >= 90) return showToast('Il n\'a pas faim !', 'info');
-                optimisticUpdates = { mascot_hunger: Math.min(100, user.mascot_hunger + 30), mascot_energy: Math.max(0, user.mascot_energy - 5) };
-                animationClass = 'anim-bounce';
-                break;
-            case 'sleep':
-                if (user.mascot_energy >= 90) return showToast('Il n\'est pas fatigué !', 'info');
-                optimisticUpdates = { mascot_energy: 100, mascot_hunger: Math.max(0, user.mascot_hunger - 20) };
-                animationClass = 'anim-sleep';
-                break;
-            case 'play':
-                if (user.mascot_happiness >= 90) return showToast('Il est déjà au top !', 'info');
-                if (user.mascot_energy < 20) return showToast('Trop fatigué pour jouer...', 'warning');
-                optimisticUpdates = { mascot_happiness: Math.min(100, user.mascot_happiness + 20), mascot_energy: Math.max(0, user.mascot_energy - 15) };
-                animationClass = 'anim-happy';
-                break;
-            case 'clean':
-                if (user.mascot_hygiene >= 90) return showToast('Déjà tout propre !', 'info');
-                optimisticUpdates = { mascot_hygiene: 100, mascot_happiness: Math.min(100, user.mascot_happiness + 5) };
-                animationClass = 'anim-shake';
-                break;
+    // Initialize game after modal is shown
+    setTimeout(() => {
+        const canvas = document.getElementById('game-canvas');
+        if (canvas && window.TurtleSurfGame) {
+            turtleGame = new TurtleSurfGame(canvas);
         }
+    }, 100);
+}
 
-        // Apply Optimistic State
-        AppState.user = { ...AppState.user, ...optimisticUpdates };
-        updateMascotUI(); // Refresh UI immediately (bars move instantly)
-        triggerMascotAnimation(animationClass); // Trigger animation
+function listenGameEvents() {
+    window.addEventListener('gameOver', (e) => {
+        const { score, points } = e.detail;
+        if (points > 0) {
+            addPoints(points);
+            addMascotXP(Math.floor(score / 2));
+        }
+        // Update high score display
+        const hsEl = document.getElementById('game-high-score');
+        if (hsEl) {
+            hsEl.textContent = localStorage.getItem('turtleSurfHighScore') || 0;
+        }
+    });
+}
 
-        try {
-            // 2. Network Request
-            const result = await window.api.interactMascot(action);
+// ==================== Mascot Interaction ====================
+async function handleInteraction(action) {
+    if (!AppState.isLoggedIn) return;
 
-            if (result.error) {
-                // Revert on API error (business logic reject)
-                AppState.user = originalUser;
-                updateMascotUI();
-                showToast(result.error, 'error');
-                return;
-            }
+    // 1. Optimistic Updates (Visual Feedback First)
+    const originalUser = { ...AppState.user }; // Backup in case of error
+    let optimisticUpdates = {};
+    let animationClass = '';
 
-            // 3. Confirm with Authoritative Data
-            AppState.user = { ...AppState.user, ...result.stats };
-            saveState();
-            updateMascotUI(); // Sync with exact backend values
+    // Simulate logic for instant feedback (matches backend roughly)
+    const user = AppState.user;
+    switch (action) {
+        case 'feed':
+            if (user.mascot_hunger >= 90) return showToast('Il n\'a pas faim !', 'info');
+            optimisticUpdates = { mascot_hunger: Math.min(100, user.mascot_hunger + 30), mascot_energy: Math.max(0, user.mascot_energy - 5) };
+            animationClass = 'anim-bounce';
+            break;
+        case 'sleep':
+            if (user.mascot_energy >= 90) return showToast('Il n\'est pas fatigué !', 'info');
+            optimisticUpdates = { mascot_energy: 100, mascot_hunger: Math.max(0, user.mascot_hunger - 20) };
+            animationClass = 'anim-sleep';
+            break;
+        case 'play':
+            if (user.mascot_happiness >= 90) return showToast('Il est déjà au top !', 'info');
+            if (user.mascot_energy < 20) return showToast('Trop fatigué pour jouer...', 'warning');
+            optimisticUpdates = { mascot_happiness: Math.min(100, user.mascot_happiness + 20), mascot_energy: Math.max(0, user.mascot_energy - 15) };
+            animationClass = 'anim-happy';
+            break;
+        case 'clean':
+            if (user.mascot_hygiene >= 90) return showToast('Déjà tout propre !', 'info');
+            optimisticUpdates = { mascot_hygiene: 100, mascot_happiness: Math.min(100, user.mascot_happiness + 5) };
+            animationClass = 'anim-shake';
+            break;
+    }
 
-            // Show success message
-            showToast(result.message, 'success');
+    // Apply Optimistic State
+    AppState.user = { ...AppState.user, ...optimisticUpdates };
+    updateMascotUI(); // Refresh UI immediately (bars move instantly)
+    triggerMascotAnimation(animationClass); // Trigger animation
 
-        } catch (err) {
-            // Revert on Network error
-            console.error('Interaction failed', err);
+    try {
+        // 2. Network Request
+        const result = await window.api.interactMascot(action);
+
+        if (result.error) {
+            // Revert on API error (business logic reject)
             AppState.user = originalUser;
             updateMascotUI();
-            showToast('Erreur de connexion...', 'error');
+            showToast(result.error, 'error');
+            return;
         }
-    }
 
-    function triggerMascotAnimation(animClass) {
-        const avatar = document.querySelector('.mascot-avatar');
-        if (!avatar || !animClass) return;
-
-        // Reset animations
-        avatar.classList.remove('anim-bounce', 'anim-shake', 'anim-happy', 'anim-sleep');
-
-        // Force reflow
-        void avatar.offsetWidth;
-
-        // Apply new animation
-        avatar.classList.add(animClass);
-    }
-
-    // ==================== Screen Management ====================
-    function showScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
-        });
-        document.getElementById(screenId).classList.add('active');
-    }
-
-    // Auth functions moved to global scope at top of file
-
-
-    function socialLogin(provider) {
-        // Simulate social login
-        AppState.isLoggedIn = true;
-        AppState.user = { name: 'Foodie', email: `user@${provider}.com` };
+        // 3. Confirm with Authoritative Data
+        AppState.user = { ...AppState.user, ...result.stats };
         saveState();
-        showScreen('onboarding-screen');
-        showToast(`Connexion avec ${provider} réussie !`, 'success');
+        updateMascotUI(); // Sync with exact backend values
+
+        // Show success message
+        showToast(result.message, 'success');
+
+    } catch (err) {
+        // Revert on Network error
+        console.error('Interaction failed', err);
+        AppState.user = originalUser;
+        updateMascotUI();
+        showToast('Erreur de connexion...', 'error');
     }
+}
 
-    function handleLogout() {
-        AppState.isLoggedIn = false;
-        AppState.user = null;
-        saveState();
-        showScreen('auth-screen');
-        showToast('À bientôt ! 👋', 'success');
-    }
+function triggerMascotAnimation(animClass) {
+    const avatar = document.querySelector('.mascot-avatar');
+    if (!avatar || !animClass) return;
 
-    // ==================== Onboarding ====================
-    function nextSlide() {
-        const slides = document.querySelectorAll('.onboarding-slide');
-        const dots = document.querySelectorAll('.dot');
-        const maxSlide = slides.length - 1;
+    // Reset animations
+    avatar.classList.remove('anim-bounce', 'anim-shake', 'anim-happy', 'anim-sleep');
 
-        if (AppState.currentSlide < maxSlide) {
-            slides[AppState.currentSlide].classList.remove('active');
-            dots[AppState.currentSlide].classList.remove('active');
+    // Force reflow
+    void avatar.offsetWidth;
 
-            AppState.currentSlide++;
+    // Apply new animation
+    avatar.classList.add(animClass);
+}
 
-            slides[AppState.currentSlide].classList.add('active');
-            dots[AppState.currentSlide].classList.add('active');
+// ==================== Screen Management ====================
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    document.getElementById(screenId).classList.add('active');
+}
 
-            if (AppState.currentSlide === maxSlide) {
-                document.getElementById('onboarding-next').innerHTML = '<span>C\'est parti !</span><span class="btn-emoji">🚀</span>';
-            }
-        } else {
-            completeOnboarding();
+// Auth functions moved to global scope at top of file
+
+
+function socialLogin(provider) {
+    // Simulate social login
+    AppState.isLoggedIn = true;
+    AppState.user = { name: 'Foodie', email: `user@${provider}.com` };
+    saveState();
+    showScreen('onboarding-screen');
+    showToast(`Connexion avec ${provider} réussie !`, 'success');
+}
+
+function handleLogout() {
+    AppState.isLoggedIn = false;
+    AppState.user = null;
+    saveState();
+    showScreen('auth-screen');
+    showToast('À bientôt ! 👋', 'success');
+}
+
+// ==================== Onboarding ====================
+function nextSlide() {
+    const slides = document.querySelectorAll('.onboarding-slide');
+    const dots = document.querySelectorAll('.dot');
+    const maxSlide = slides.length - 1;
+
+    if (AppState.currentSlide < maxSlide) {
+        slides[AppState.currentSlide].classList.remove('active');
+        dots[AppState.currentSlide].classList.remove('active');
+
+        AppState.currentSlide++;
+
+        slides[AppState.currentSlide].classList.add('active');
+        dots[AppState.currentSlide].classList.add('active');
+
+        if (AppState.currentSlide === maxSlide) {
+            document.getElementById('onboarding-next').innerHTML = '<span>C\'est parti !</span><span class="btn-emoji">🚀</span>';
         }
-    }
-
-    function skipOnboarding() {
+    } else {
         completeOnboarding();
     }
+}
 
-    function completeOnboarding() {
-        showScreen('app-screen');
-        updateUI();
-        showToast('Profite de ton cadeau de bienvenue ! 🎁', 'success');
+function skipOnboarding() {
+    completeOnboarding();
+}
+
+function completeOnboarding() {
+    showScreen('app-screen');
+    updateUI();
+    showToast('Profite de ton cadeau de bienvenue ! 🎁', 'success');
+}
+
+function copyCode() {
+    const code = document.getElementById('welcome-code-value').textContent;
+    navigator.clipboard.writeText(code);
+    showToast('Code copié ! 📋', 'success');
+}
+
+// ==================== Tab Navigation ====================
+function switchTab(tabName) {
+    // Update content
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+
+    // Update nav
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+}
+
+// ==================== UI Updates ====================
+function updateUI() {
+    updateUserDisplay();
+    updateMascot();
+    updateLoyalty();
+    updatePoints();
+}
+
+function updateUserDisplay() {
+    const name = AppState.user?.name || 'Foodie';
+    document.getElementById('user-name-display').textContent = name;
+    document.getElementById('profile-name').textContent = name;
+}
+
+function updatePoints() {
+    document.getElementById('total-points').textContent = AppState.loyalty.points;
+    document.getElementById('profile-points').textContent = AppState.loyalty.points;
+    document.getElementById('profile-visits').textContent = AppState.loyalty.visits;
+    document.getElementById('profile-level').textContent = AppState.mascot.level;
+}
+
+// ==================== Mascot System ====================
+function updateMascotUI() {
+    console.log('🐢 Updating Mascot UI...', AppState.user);
+    const user = AppState.user;
+    if (!user) return;
+
+    // XP & Level - Safety check
+    const xp = user.mascot_xp !== undefined ? user.mascot_xp : 0;
+    const level = user.mascot_level !== undefined ? user.mascot_level : 1;
+
+    const xpEl = document.getElementById('mascot-xp');
+    if (xpEl) xpEl.textContent = xp;
+
+    const levelEl = document.getElementById('mascot-level');
+    if (levelEl) levelEl.textContent = level;
+
+    const xpFill = document.getElementById('mascot-xp-fill');
+    if (xpFill) xpFill.style.width = `${Math.min(100, xp)}%`;
+
+    document.getElementById('mascot-stage').textContent = user.mascot_stage || 'Bébé';
+
+    // Emoji based on stage
+    const emojis = {
+        'egg': '🥚',
+        'baby': '🐢',
+        'child': '🐢',
+        'teen': '🐬',
+        'adult': '🦈'
+    };
+    const avatar = document.querySelector('.mascot-avatar');
+    if (avatar) avatar.textContent = emojis[user.mascot_stage] || '🐢';
+
+    // Stats Bars & Actions
+    // Ensure values exist or default to 50
+    updateStatBar('hunger', user.mascot_hunger ?? 50);
+    updateStatBar('energy', user.mascot_energy ?? 50);
+    updateStatBar('happiness', user.mascot_happiness ?? 50);
+    updateStatBar('hygiene', user.mascot_hygiene ?? 50);
+
+    // Disable buttons if maxed/depleted logic is wanted visually
+    // (Optional: visual disabled state based on backend rules)
+    document.getElementById('btn-feed').disabled = (user.mascot_hunger >= 90);
+    document.getElementById('btn-sleep').disabled = (user.mascot_energy >= 90);
+    document.getElementById('btn-play').disabled = (user.mascot_happiness >= 90 || user.mascot_energy < 20);
+    document.getElementById('btn-clean').disabled = (user.mascot_hygiene >= 90);
+}
+
+function updateStatBar(type, value) {
+    const bar = document.getElementById(`stat-${type}`);
+    if (bar) {
+        bar.style.width = `${value || 50}%`;
+        // Color logic is handled in CSS but could be dynamic here if needed
+    }
+}
+function updateMascotMood() {
+    const moods = {
+        happy: '😊 Content',
+        excited: '🤩 Excité',
+        hungry: '😋 Affamé',
+        sleepy: '😴 Fatigué',
+        love: '😍 Amoureux'
+    };
+
+    const moodKeys = Object.keys(moods);
+    const randomMood = moodKeys[Math.floor(Math.random() * moodKeys.length)];
+    AppState.mascot.mood = randomMood;
+    document.getElementById('mascot-mood').textContent = moods[randomMood];
+}
+
+function interactWithMascot() {
+    // Add hearts animation
+    const heartsContainer = document.getElementById('mascot-hearts');
+    for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+            const heart = document.createElement('span');
+            heart.className = 'heart';
+            heart.textContent = '❤️';
+            heart.style.left = `${Math.random() * 60 - 30}px`;
+            heartsContainer.appendChild(heart);
+            setTimeout(() => heart.remove(), 1000);
+        }, i * 100);
     }
 
-    function copyCode() {
-        const code = document.getElementById('welcome-code-value').textContent;
-        navigator.clipboard.writeText(code);
-        showToast('Code copié ! 📋', 'success');
+    // Add XP
+    addMascotXP(5);
+
+    // Add points sometimes
+    if (Math.random() > 0.7) {
+        addPoints(10);
+        showToast('+10 points ! Ta mascotte t\'adore ! ⭐', 'success');
     }
 
-    // ==================== Tab Navigation ====================
-    function switchTab(tabName) {
-        // Update content
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        document.getElementById(`tab-${tabName}`).classList.add('active');
+    // Update message
+    const message = mascotMessages[Math.floor(Math.random() * mascotMessages.length)];
+    document.getElementById('mascot-speech').querySelector('p').textContent = message;
+}
 
-        // Update nav
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+function addMascotXP(amount) {
+    AppState.mascot.xp += amount;
+
+    if (AppState.mascot.xp >= 100) {
+        AppState.mascot.xp = 0;
+        AppState.mascot.level++;
+        updateMascotStage();
+        showToast(`🎉 Ta mascotte passe au niveau ${AppState.mascot.level} !`, 'success');
     }
 
-    // ==================== UI Updates ====================
-    function updateUI() {
-        updateUserDisplay();
-        updateMascot();
-        updateLoyalty();
-        updatePoints();
-    }
+    saveState();
+    updateMascot();
+}
 
-    function updateUserDisplay() {
-        const name = AppState.user?.name || 'Foodie';
-        document.getElementById('user-name-display').textContent = name;
-        document.getElementById('profile-name').textContent = name;
-    }
-
-    function updatePoints() {
-        document.getElementById('total-points').textContent = AppState.loyalty.points;
-        document.getElementById('profile-points').textContent = AppState.loyalty.points;
-        document.getElementById('profile-visits').textContent = AppState.loyalty.visits;
-        document.getElementById('profile-level').textContent = AppState.mascot.level;
-    }
-
-    // ==================== Mascot System ====================
-    function updateMascotUI() {
-        console.log('🐢 Updating Mascot UI...', AppState.user);
-        const user = AppState.user;
-        if (!user) return;
-
-        // XP & Level - Safety check
-        const xp = user.mascot_xp !== undefined ? user.mascot_xp : 0;
-        const level = user.mascot_level !== undefined ? user.mascot_level : 1;
-
-        const xpEl = document.getElementById('mascot-xp');
-        if (xpEl) xpEl.textContent = xp;
-
-        const levelEl = document.getElementById('mascot-level');
-        if (levelEl) levelEl.textContent = level;
-
-        const xpFill = document.getElementById('mascot-xp-fill');
-        if (xpFill) xpFill.style.width = `${Math.min(100, xp)}%`;
-
-        document.getElementById('mascot-stage').textContent = user.mascot_stage || 'Bébé';
-
-        // Emoji based on stage
-        const emojis = {
-            'egg': '🥚',
-            'baby': '🐢',
-            'child': '🐢',
-            'teen': '🐬',
-            'adult': '🦈'
-        };
-        const avatar = document.querySelector('.mascot-avatar');
-        if (avatar) avatar.textContent = emojis[user.mascot_stage] || '🐢';
-
-        // Stats Bars & Actions
-        // Ensure values exist or default to 50
-        updateStatBar('hunger', user.mascot_hunger ?? 50);
-        updateStatBar('energy', user.mascot_energy ?? 50);
-        updateStatBar('happiness', user.mascot_happiness ?? 50);
-        updateStatBar('hygiene', user.mascot_hygiene ?? 50);
-
-        // Disable buttons if maxed/depleted logic is wanted visually
-        // (Optional: visual disabled state based on backend rules)
-        document.getElementById('btn-feed').disabled = (user.mascot_hunger >= 90);
-        document.getElementById('btn-sleep').disabled = (user.mascot_energy >= 90);
-        document.getElementById('btn-play').disabled = (user.mascot_happiness >= 90 || user.mascot_energy < 20);
-        document.getElementById('btn-clean').disabled = (user.mascot_hygiene >= 90);
-    }
-
-    function updateStatBar(type, value) {
-        const bar = document.getElementById(`stat-${type}`);
-        if (bar) {
-            bar.style.width = `${value || 50}%`;
-            // Color logic is handled in CSS but could be dynamic here if needed
+function updateMascotStage() {
+    const level = AppState.mascot.level;
+    for (const [stage, data] of Object.entries(mascotStages).reverse()) {
+        if (level >= data.minLevel) {
+            AppState.mascot.stage = stage;
+            break;
         }
     }
-    function updateMascotMood() {
-        const moods = {
-            happy: '😊 Content',
-            excited: '🤩 Excité',
-            hungry: '😋 Affamé',
-            sleepy: '😴 Fatigué',
-            love: '😍 Amoureux'
-        };
+}
 
-        const moodKeys = Object.keys(moods);
-        const randomMood = moodKeys[Math.floor(Math.random() * moodKeys.length)];
-        AppState.mascot.mood = randomMood;
-        document.getElementById('mascot-mood').textContent = moods[randomMood];
+// ==================== Loyalty System ====================
+function initializeStamps() {
+    const grid = document.getElementById('stamps-grid');
+    grid.innerHTML = '';
+
+    for (let i = 0; i < 10; i++) {
+        const stamp = document.createElement('div');
+        stamp.className = `stamp-slot ${i < AppState.loyalty.visits ? 'filled' : ''}`;
+        stamp.textContent = i < AppState.loyalty.visits ? '✓' : '';
+        grid.appendChild(stamp);
     }
 
-    function interactWithMascot() {
-        // Add hearts animation
-        const heartsContainer = document.getElementById('mascot-hearts');
-        for (let i = 0; i < 5; i++) {
-            setTimeout(() => {
-                const heart = document.createElement('span');
-                heart.className = 'heart';
-                heart.textContent = '❤️';
-                heart.style.left = `${Math.random() * 60 - 30}px`;
-                heartsContainer.appendChild(heart);
-                setTimeout(() => heart.remove(), 1000);
-            }, i * 100);
-        }
+    updateLoyaltyDisplay();
+}
 
-        // Add XP
-        addMascotXP(5);
+function updateLoyalty() {
+    initializeStamps();
+}
 
-        // Add points sometimes
-        if (Math.random() > 0.7) {
-            addPoints(10);
-            showToast('+10 points ! Ta mascotte t\'adore ! ⭐', 'success');
-        }
+function updateLoyaltyDisplay() {
+    const visits = AppState.loyalty.visits;
+    document.getElementById('current-visits').textContent = visits;
+    document.getElementById('visits-count').textContent = `${visits}/10`;
 
-        // Update message
-        const message = mascotMessages[Math.floor(Math.random() * mascotMessages.length)];
-        document.getElementById('mascot-speech').querySelector('p').textContent = message;
-    }
+    // Calculate next reward
+    const milestones = [3, 5, 8, 10, 15];
+    const nextMilestone = milestones.find(m => m > visits) || 15;
+    const remaining = nextMilestone - visits;
+    document.getElementById('next-reward-visits').textContent = remaining;
+}
 
-    function addMascotXP(amount) {
-        AppState.mascot.xp += amount;
+function addPoints(amount) {
+    AppState.loyalty.points += amount;
+    saveState();
+    updatePoints();
+}
 
-        if (AppState.mascot.xp >= 100) {
-            AppState.mascot.xp = 0;
-            AppState.mascot.level++;
-            updateMascotStage();
-            showToast(`🎉 Ta mascotte passe au niveau ${AppState.mascot.level} !`, 'success');
-        }
-
-        saveState();
-        updateMascot();
-    }
-
-    function updateMascotStage() {
-        const level = AppState.mascot.level;
-        for (const [stage, data] of Object.entries(mascotStages).reverse()) {
-            if (level >= data.minLevel) {
-                AppState.mascot.stage = stage;
-                break;
-            }
-        }
-    }
-
-    // ==================== Loyalty System ====================
-    function initializeStamps() {
-        const grid = document.getElementById('stamps-grid');
-        grid.innerHTML = '';
-
-        for (let i = 0; i < 10; i++) {
-            const stamp = document.createElement('div');
-            stamp.className = `stamp-slot ${i < AppState.loyalty.visits ? 'filled' : ''}`;
-            stamp.textContent = i < AppState.loyalty.visits ? '✓' : '';
-            grid.appendChild(stamp);
-        }
-
-        updateLoyaltyDisplay();
-    }
-
-    function updateLoyalty() {
-        initializeStamps();
-    }
-
-    function updateLoyaltyDisplay() {
-        const visits = AppState.loyalty.visits;
-        document.getElementById('current-visits').textContent = visits;
-        document.getElementById('visits-count').textContent = `${visits}/10`;
-
-        // Calculate next reward
-        const milestones = [3, 5, 8, 10, 15];
-        const nextMilestone = milestones.find(m => m > visits) || 15;
-        const remaining = nextMilestone - visits;
-        document.getElementById('next-reward-visits').textContent = remaining;
-    }
-
-    function addPoints(amount) {
-        AppState.loyalty.points += amount;
-        saveState();
-        updatePoints();
-    }
-
-    function useReward(rewardType) {
-        showModal(`
+function useReward(rewardType) {
+    showModal(`
         <div class="reward-use-modal">
             <div class="reward-emoji-large">🎁</div>
             <h2>Utiliser ta récompense ?</h2>
@@ -632,37 +634,37 @@ async function refreshUserData() {
             </button>
         </div>
     `);
+}
+
+function confirmUseReward(rewardType) {
+    const idx = AppState.loyalty.rewards.indexOf(rewardType);
+    if (idx > -1) {
+        AppState.loyalty.rewards.splice(idx, 1);
+        saveState();
+        closeModal();
+        showToast('Récompense utilisée ! Bon appétit ! 🍔', 'success');
+        updateUI();
     }
+}
 
-    function confirmUseReward(rewardType) {
-        const idx = AppState.loyalty.rewards.indexOf(rewardType);
-        if (idx > -1) {
-            AppState.loyalty.rewards.splice(idx, 1);
-            saveState();
-            closeModal();
-            showToast('Récompense utilisée ! Bon appétit ! 🍔', 'success');
-            updateUI();
-        }
-    }
+// ==================== Contests ====================
+function updateContestTimer() {
+    // Simulate countdown to end of month
+    const now = new Date();
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    const diff = endOfMonth - now;
 
-    // ==================== Contests ====================
-    function updateContestTimer() {
-        // Simulate countdown to end of month
-        const now = new Date();
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-        const diff = endOfMonth - now;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    document.getElementById('timer-days').textContent = days;
+    document.getElementById('timer-hours').textContent = hours;
+    document.getElementById('timer-mins').textContent = mins;
+}
 
-        document.getElementById('timer-days').textContent = days;
-        document.getElementById('timer-hours').textContent = hours;
-        document.getElementById('timer-mins').textContent = mins;
-    }
-
-    function participateContest() {
-        showModal(`
+function participateContest() {
+    showModal(`
         <div class="contest-modal">
             <div class="contest-emoji-large">🎄</div>
             <h2>Concours de Noël</h2>
@@ -677,59 +679,59 @@ async function refreshUserData() {
             </button>
         </div>
     `);
+}
+
+function submitContestEntry() {
+    const textarea = document.querySelector('.contest-modal textarea');
+    if (!textarea.value.trim()) {
+        showToast('Écris ta réponse !', 'error');
+        return;
     }
 
-    function submitContestEntry() {
-        const textarea = document.querySelector('.contest-modal textarea');
-        if (!textarea.value.trim()) {
-            showToast('Écris ta réponse !', 'error');
-            return;
-        }
+    addPoints(50);
+    addMascotXP(20);
+    closeModal();
+    showToast('Participation enregistrée ! +50 points 🍀', 'success');
 
-        addPoints(50);
-        addMascotXP(20);
-        closeModal();
-        showToast('Participation enregistrée ! +50 points 🍀', 'success');
+    // Update participants count
+    const countEl = document.getElementById('participants-count');
+    countEl.textContent = parseInt(countEl.textContent) + 1;
+}
 
-        // Update participants count
-        const countEl = document.getElementById('participants-count');
-        countEl.textContent = parseInt(countEl.textContent) + 1;
+function showComingSoon() {
+    showToast('Bientôt disponible ! 🚀', 'success');
+}
+
+// ==================== Referral ====================
+function copyReferralCode() {
+    const code = document.getElementById('referral-code').textContent;
+    navigator.clipboard.writeText(code);
+    showToast('Code copié ! Partage-le vite ! 📋', 'success');
+}
+
+function shareVia(platform) {
+    const code = AppState.referrals.code;
+    const message = `Rejoins-moi sur Machi Mochkil ! Utilise mon code ${code} et gagne une boisson offerte 🍹 https://machimochkil.app/join/${code}`;
+
+    switch (platform) {
+        case 'whatsapp':
+            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+            break;
+        case 'sms':
+            window.open(`sms:?body=${encodeURIComponent(message)}`);
+            break;
+        case 'more':
+            if (navigator.share) {
+                navigator.share({ title: 'Machi Mochkil', text: message });
+            } else {
+                copyReferralCode();
+            }
+            break;
     }
+}
 
-    function showComingSoon() {
-        showToast('Bientôt disponible ! 🚀', 'success');
-    }
-
-    // ==================== Referral ====================
-    function copyReferralCode() {
-        const code = document.getElementById('referral-code').textContent;
-        navigator.clipboard.writeText(code);
-        showToast('Code copié ! Partage-le vite ! 📋', 'success');
-    }
-
-    function shareVia(platform) {
-        const code = AppState.referrals.code;
-        const message = `Rejoins-moi sur Machi Mochkil ! Utilise mon code ${code} et gagne une boisson offerte 🍹 https://machimochkil.app/join/${code}`;
-
-        switch (platform) {
-            case 'whatsapp':
-                window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
-                break;
-            case 'sms':
-                window.open(`sms:?body=${encodeURIComponent(message)}`);
-                break;
-            case 'more':
-                if (navigator.share) {
-                    navigator.share({ title: 'Machi Mochkil', text: message });
-                } else {
-                    copyReferralCode();
-                }
-                break;
-        }
-    }
-
-    function showQRCode() {
-        showModal(`
+function showQRCode() {
+    showModal(`
         <div class="qr-modal">
             <h2>Ton QR Code Parrain</h2>
             <div class="qr-placeholder large">
@@ -739,24 +741,24 @@ async function refreshUserData() {
             <p class="referral-code-display">${AppState.referrals.code}</p>
         </div>
     `);
-    }
+}
 
-    // ==================== Feed ====================
-    function initializeFeed() {
-        const feedList = document.getElementById('feed-list');
-        const homePreview = document.getElementById('home-feed-preview');
+// ==================== Feed ====================
+function initializeFeed() {
+    const feedList = document.getElementById('feed-list');
+    const homePreview = document.getElementById('home-feed-preview');
 
-        feedList.innerHTML = feedContent.map(item => createFeedItem(item)).join('');
-        homePreview.innerHTML = feedContent.slice(0, 2).map(item => createFeedItem(item)).join('');
+    feedList.innerHTML = feedContent.map(item => createFeedItem(item)).join('');
+    homePreview.innerHTML = feedContent.slice(0, 2).map(item => createFeedItem(item)).join('');
 
-        // Filter buttons
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => filterFeed(btn.dataset.filter));
-        });
-    }
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => filterFeed(btn.dataset.filter));
+    });
+}
 
-    function createFeedItem(item) {
-        return `
+function createFeedItem(item) {
+    return `
         <div class="feed-item" data-type="${item.type}">
             <div class="feed-item-header">
                 <span class="feed-item-type">${item.emoji} ${item.type}</span>
@@ -766,26 +768,26 @@ async function refreshUserData() {
             <p class="feed-item-excerpt">${item.excerpt}</p>
         </div>
     `;
-    }
+}
 
-    function filterFeed(filter) {
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.filter === filter);
-        });
+function filterFeed(filter) {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+    });
 
-        document.querySelectorAll('#feed-list .feed-item').forEach(item => {
-            if (filter === 'all' || item.dataset.type === filter) {
-                item.style.display = 'block';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    }
+    document.querySelectorAll('#feed-list .feed-item').forEach(item => {
+        if (filter === 'all' || item.dataset.type === filter) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
 
-    // ==================== Profile & Settings ====================
-    function showSettings(section) {
-        const contents = {
-            account: `
+// ==================== Profile & Settings ====================
+function showSettings(section) {
+    const contents = {
+        account: `
             <h2>👤 Mon compte</h2>
             <div class="settings-form">
                 <div class="input-group">
@@ -801,7 +803,7 @@ async function refreshUserData() {
                 </button>
             </div>
         `,
-            notifications: `
+        notifications: `
             <h2>🔔 Notifications</h2>
             <div class="settings-toggles">
                 <div class="toggle-item">
@@ -822,7 +824,7 @@ async function refreshUserData() {
                 </div>
             </div>
         `,
-            location: `
+        location: `
             <h2>📍 Géolocalisation</h2>
             <p>Active la géolocalisation pour recevoir des notifications quand tu passes près du resto !</p>
             <div class="settings-toggles">
@@ -833,7 +835,7 @@ async function refreshUserData() {
             </div>
             <p class="settings-info">🔒 Tes données sont protégées et jamais partagées.</p>
         `,
-            privacy: `
+        privacy: `
             <h2>🔒 Confidentialité & RGPD</h2>
             <p>Tes données nous tiennent à cœur !</p>
             <ul class="privacy-list">
@@ -844,7 +846,7 @@ async function refreshUserData() {
             <button class="btn-secondary" onclick="closeModal();">Télécharger mes données</button>
             <button class="btn-danger" onclick="closeModal();">Supprimer mon compte</button>
         `,
-            help: `
+        help: `
             <h2>❓ Aide & FAQ</h2>
             <div class="faq-list">
                 <details>
@@ -861,7 +863,7 @@ async function refreshUserData() {
                 </details>
             </div>
         `,
-            about: `
+        about: `
             <h2>ℹ️ À propos</h2>
             <div class="about-content">
                 <p><strong>Machi Mochkil</strong></p>
@@ -870,13 +872,13 @@ async function refreshUserData() {
                 <p>Fait avec ❤️ pour nos clients</p>
             </div>
         `
-        };
+    };
 
-        showModal(contents[section] || '<p>Section non trouvée</p>');
-    }
+    showModal(contents[section] || '<p>Section non trouvée</p>');
+}
 
-    function showPointsDetail() {
-        showModal(`
+function showPointsDetail() {
+    showModal(`
         <h2>⭐ Tes points</h2>
         <div class="points-detail">
             <div class="points-total">
@@ -893,10 +895,10 @@ async function refreshUserData() {
             </ul>
         </div>
     `);
-    }
+}
 
-    function showNotifications() {
-        showModal(`
+function showNotifications() {
+    showModal(`
         <h2>🔔 Notifications</h2>
         <div class="notifications-list">
             <div class="notification-item unread">
@@ -925,31 +927,31 @@ async function refreshUserData() {
             </div>
         </div>
     `);
-    }
+}
 
-    // ==================== Modal ====================
-    function showModal(content) {
-        const modal = document.getElementById('modal-overlay');
-        const body = document.getElementById('modal-body');
-        body.innerHTML = content;
-        modal.classList.remove('hidden');
-    }
+// ==================== Modal ====================
+function showModal(content) {
+    const modal = document.getElementById('modal-overlay');
+    const body = document.getElementById('modal-body');
+    body.innerHTML = content;
+    modal.classList.remove('hidden');
+}
 
-    function closeModal() {
-        document.getElementById('modal-overlay').classList.add('hidden');
-    }
+function closeModal() {
+    document.getElementById('modal-overlay').classList.add('hidden');
+}
 
-    // ==================== Toast ====================
-    function showToast(message, type = 'success') {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span><span>${message}</span>`;
-        container.appendChild(toast);
+// ==================== Toast ====================
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span><span>${message}</span>`;
+    container.appendChild(toast);
 
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
-    }
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
 
