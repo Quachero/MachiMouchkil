@@ -38,6 +38,11 @@ self.addEventListener('activate', event => {
 
 // Fetch with cache-first strategy
 self.addEventListener('fetch', event => {
+    // 🚨 NETWORK ONLY FOR API 🚨
+    if (event.request.url.includes('/api/')) {
+        return; // Let the browser handle it (Network only)
+    }
+
     event.respondWith(
         caches.match(event.request)
             .then(response => {
