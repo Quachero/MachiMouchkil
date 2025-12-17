@@ -19,8 +19,11 @@ router.post('/register', async (req, res) => {
         const { name, email, password, phone, referralCode } = req.body;
 
         if (!name || !email || !password) {
+            console.log('❌ Register failed: Missing fields', req.body);
             return res.status(400).json({ error: 'Name, email and password required' });
         }
+
+        console.log('📝 Attempting registration for:', email);
 
         // Check if email exists
         const existing = await db.get('SELECT id FROM users WHERE email = ?', [email]);

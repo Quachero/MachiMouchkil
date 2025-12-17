@@ -61,10 +61,15 @@ class DBAdapter {
 
     async run(sql, params = []) {
         if (this.type === 'postgres') {
-            const result = await this.pool.query(this._convertSql(sql), params);
-            // Postgres doesn't return lastInsertRowid standardly like SQLite
-            // We usually rely on RETURNING * in SQL for PG, but for generic 'run', we return rowCount
-            return { changes: result.rowCount };
+            try {
+                const result = await this.pool.query(this._convertSql(sql), params);
+                return { changes: result.rowCount };
+            } catch (err) {
+                console.error('🔥 SQL Error:', err.message);
+                console.error('   Query:', sql);
+                console.error('   Params:', params);
+                throw err;
+            }
         } else {
             return this.sqlite.prepare(sql).run(params);
         }
