@@ -529,9 +529,10 @@ body {
 }
 
 .auth-switch a {
-    color: var(--primary);
+    color: var(--accent);
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
+    border-bottom: 2px solid var(--accent);
 }
 
 /* Onboarding */
@@ -2219,5 +2220,6 @@ body {
     .game-card.featured {
         grid-column: span 3;
     }
-}/ *   A p p e n d i n g   M a s c o t   C S S   t o   e n d   * /  
- 
+}
+
+/ *   A p p e n d i n g   M a s c o t   C S S   t o   e n d   * /     
