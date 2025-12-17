@@ -37,6 +37,7 @@ app.get('/api/health', (req, res) => {
         status: 'ok',
         message: '🐢 Machi Mouchkil API is running!',
         db_type: dbAdapter.type,
+        db_init_error: dbAdapter.initError || null,
         on_vercel: !!process.env.VERCEL
     });
     console.log(`🏄‍♂️ Machi Mouchkil API running on port ${PORT}`);
