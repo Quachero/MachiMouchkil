@@ -558,30 +558,33 @@ function interactWithMascot() {
 }
 
 function addMascotXP(amount) {
-    AppState.mascot.xp += amount;
+    if (!AppState.user) return; // Guard clause
 
-    if (AppState.mascot.xp >= 100) {
-        AppState.mascot.xp = 0;
-        AppState.mascot.level++;
-        updateMascotStage();
-        showToast(`🎉 Ta mascotte passe au niveau ${AppState.mascot.level} !`, 'success');
+    // Update LOCAL USER STATE (What the UI sees)
+    AppState.user.mascot_xp = (AppState.user.mascot_xp || 0) + amount;
+
+    if (AppState.user.mascot_xp >= 100) {
+        AppState.user.mascot_xp = 0;
+        AppState.user.mascot_level = (AppState.user.mascot_level || 1) + 1;
+        updateMascotStage(); // Helper needs to look at user too
+        showToast(`🎉 Ta mascotte passe au niveau ${AppState.user.mascot_level} !`, 'success');
     }
 
     saveState();
-    updateMascotUI();
+    updateMascotUI(); // Now this sees the updated AppState.user!
 
     // Sync to backend
     if (AppState.isLoggedIn) {
-        window.api.updateMascot(AppState.mascot.xp, AppState.mascot.level, AppState.mascot.stage)
+        window.api.updateMascot(AppState.user.mascot_xp, AppState.user.mascot_level, AppState.user.mascot_stage || 'baby')
             .catch(err => console.error('XP Sync failed', err));
     }
 }
 
 function updateMascotStage() {
-    const level = AppState.mascot.level;
+    const level = AppState.user.mascot_level || 1;
     for (const [stage, data] of Object.entries(mascotStages).reverse()) {
         if (level >= data.minLevel) {
-            AppState.mascot.stage = stage;
+            AppState.user.mascot_stage = stage;
             break;
         }
     }
