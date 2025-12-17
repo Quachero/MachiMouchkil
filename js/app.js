@@ -1,5 +1,80 @@
 // Machi Mouchkil App - Main JavaScript
 
+// ==================== Global Auth Functions ====================
+// Defined globally to ensure they are available for HTML onclick events immediately
+window.showLogin = function () {
+    console.log('🔘 showLogin clicked');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    if (loginForm && registerForm) {
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+    } else {
+        console.error('❌ Auth forms not found in DOM');
+    }
+};
+
+window.showRegister = function () {
+    console.log('🔘 showRegister clicked');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    if (loginForm && registerForm) {
+        loginForm.classList.add('hidden');
+        registerForm.classList.remove('hidden');
+    } else {
+        console.error('❌ Auth forms not found in DOM');
+    }
+};
+
+window.handleLogin = async function () {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) {
+        showToast('Remplis tous les champs !', 'error');
+        return;
+    }
+
+    try {
+        const result = await window.api.login(email, password);
+
+        AppState.isLoggedIn = true;
+        AppState.user = result.user;
+        saveState();
+        showScreen('app-screen');
+        updateUI();
+        showToast('Content de te revoir ! 👋', 'success');
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+};
+
+window.handleRegister = async function () {
+    const name = document.getElementById('register-name').value;
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const phone = document.getElementById('register-phone').value;
+
+    if (!name || !email || !password) {
+        showToast('Remplis tous les champs obligatoires !', 'error');
+        return;
+    }
+
+    try {
+        const result = await window.api.register(name, email, password);
+
+        AppState.isLoggedIn = true;
+        AppState.user = result.user;
+        AppState.loyalty.rewards.push('welcome_drink');
+
+        saveState();
+        showScreen('onboarding-screen');
+        showToast('Bienvenue dans la famille ! 🎉', 'success');
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+};
+
 // ==================== App State ====================
 const AppState = {
     user: null,
@@ -289,69 +364,8 @@ async function refreshUserData() {
         document.getElementById(screenId).classList.add('active');
     }
 
-    // ==================== Auth Functions ====================
-    window.showLogin = function () {
-        document.getElementById('login-form').classList.remove('hidden');
-        document.getElementById('register-form').classList.add('hidden');
-    };
+    // Auth functions moved to global scope at top of file
 
-    window.showRegister = function () {
-        console.log('🔘 showRegister clicked');
-        document.getElementById('login-form').classList.add('hidden');
-        document.getElementById('register-form').classList.remove('hidden');
-    };
-    console.log('✅ Auth functions exposed to window');
-
-    window.handleLogin = async function () {
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-
-        if (!email || !password) {
-            showToast('Remplis tous les champs !', 'error');
-            return;
-        }
-
-        try {
-            const result = await window.api.login(email, password);
-
-            AppState.isLoggedIn = true;
-            AppState.user = result.user; // Use real user data from backend
-            // Token is auto-handled by api client (setToken)
-
-            saveState();
-            showScreen('app-screen');
-            updateUI();
-            showToast('Content de te revoir ! 👋', 'success');
-        } catch (err) {
-            showToast(err.message, 'error');
-        }
-    };
-
-    window.handleRegister = async function () {
-        const name = document.getElementById('register-name').value;
-        const email = document.getElementById('register-email').value;
-        const password = document.getElementById('register-password').value;
-        const phone = document.getElementById('register-phone').value;
-
-        if (!name || !email || !password) {
-            showToast('Remplis tous les champs obligatoires !', 'error');
-            return;
-        }
-
-        try {
-            const result = await window.api.register(name, email, password);
-
-            AppState.isLoggedIn = true;
-            AppState.user = result.user;
-            AppState.loyalty.rewards.push('welcome_drink');
-
-            saveState();
-            showScreen('onboarding-screen');
-            showToast('Bienvenue dans la famille ! 🎉', 'success');
-        } catch (err) {
-            showToast(err.message, 'error');
-        }
-    };
 
     function socialLogin(provider) {
         // Simulate social login
