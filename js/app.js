@@ -101,38 +101,39 @@ const AppState = {
 };
 
 // ==================== Feed Data ====================
+// ==================== Feed Data ====================
 const feedContent = [
     {
         id: 1,
         type: 'news',
-        title: '🎄 Menu de Noël disponible !',
-        excerpt: 'Découvre notre sélection festive : burger au foie gras, dessert chocolat-marron...',
+        title: 'Nouveau K.O.B : Le Wili Wili 🌶️',
+        excerpt: 'Chaud devant ! Découvre notre nouveau sandwich épicé qui va te réveiller les papilles. #KhanezOuBnine',
         date: 'Il y a 2h',
-        emoji: '🎄'
+        emoji: '🔥'
     },
     {
         id: 2,
         type: 'quote',
-        title: '"La vie est trop courte pour manger mal"',
-        excerpt: '- L\'équipe Machi Mochkil 💪',
+        title: '"Khanez ou bnine is the new tacos baby"',
+        excerpt: '- La philosophie Machi Mouchkil 🤙',
         date: 'Hier',
         emoji: '💬'
     },
     {
         id: 3,
         type: 'event',
-        title: '🎉 Soirée Before de Noël',
-        excerpt: 'Le 23 décembre, viens fêter Noël avant l\'heure avec nous ! Surprises garanties.',
+        title: '🎧 Soirée Hip Hop 90\'',
+        excerpt: 'Ce samedi, grosse vibe Old School au shop. Viens manger ton briouate sur du Dr. Dre !',
         date: 'Il y a 3j',
-        emoji: '🎉'
+        emoji: '🎵'
     },
     {
         id: 4,
         type: 'news',
-        title: 'Nouveau burger : Le Machi Deluxe 🍔',
-        excerpt: 'Double steak, cheddar affiné, sauce secrète... Tu vas adorer !',
+        title: 'On recrute un Associé Gérant !',
+        excerpt: 'Tu as l\'âme d\'un entrepreneur et tu aimes la street food ? Rejoins l\'aventure Machi Mouchkil !',
         date: 'Il y a 5j',
-        emoji: '🍔'
+        emoji: '🤝'
     }
 ];
 
